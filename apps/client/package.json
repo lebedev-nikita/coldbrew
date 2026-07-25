@@ -1,0 +1,30 @@
+{
+  "name": "@omnistream/client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && tsc -b",
+    "typecheck": "tsc -b --pretty false"
+  },
+  "dependencies": {
+    "@lebedevna/match": "^0.2.0",
+    "@omnistream/server": "workspace:*",
+    "@tanstack/react-query": "^5.85.5",
+    "@tanstack/react-router": "^1.131.36",
+    "@trpc/client": "^11.4.3",
+    "@trpc/server": "^11.4.3",
+    "@trpc/tanstack-react-query": "^11.18.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "superjson": "^2.2.2"
+  },
+  "devDependencies": {
+    "@tanstack/router-plugin": "^1.168.23",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.2",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3"
+  }
+}

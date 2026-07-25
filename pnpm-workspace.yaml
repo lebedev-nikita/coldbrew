@@ -1,0 +1,7 @@
+packages:
+  - apps/*
+
+autoInstallPeers: false
+verifyDepsBeforeRun: false
+allowBuilds:
+  esbuild: true

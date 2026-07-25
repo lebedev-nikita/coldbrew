@@ -1,0 +1,8 @@
+node_modules
+.pnpm-store
+dist
+.env
+.tanstack
+.agents
+.DS_Store
+*.tsbuildinfo
