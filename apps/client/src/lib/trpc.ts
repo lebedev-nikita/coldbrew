@@ -1,4 +1,4 @@
-import type { AppRouter } from "@omnistream/server/api/trpc";
+import type { AppRouter } from "@omnistream/server";
 import { QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
@@ -13,7 +13,13 @@ const trpcClient = createTRPCClient<AppRouter>({
   ],
 });
 
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 0,
+    },
+  },
+});
 
 export const trpc = createTRPCOptionsProxy({
   client: trpcClient,

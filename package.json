@@ -6,6 +6,7 @@
     "fmt:check": "oxfmt --check"
   },
   "devDependencies": {
+    "@types/node": "^24.13.3",
     "oxfmt": "^0.60.0"
   },
   "packageManager": "pnpm@11.17.0"

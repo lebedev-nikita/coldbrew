@@ -1,0 +1,31 @@
+import { initTRPC, TRPCError } from "@trpc/server";
+import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
+import SuperJSON from "superjson";
+import { getUserId } from "../_util.js";
+
+export const createContext = (opt: FetchCreateContextFnOptions) => ({
+  userId: getUserId(opt.req),
+});
+
+export type Context = ReturnType<typeof createContext>;
+
+const t = initTRPC.context<Context>().create({
+  transformer: SuperJSON,
+  errorFormatter({ shape, error }) {
+    console.error(error.stack ?? error.message);
+    return shape;
+  },
+});
+
+export const router = t.router;
+export const procedure = t.procedure;
+
+export const authenticatedProcedure = procedure.use(async ({ next, ctx }) => {
+  const userId = ctx.userId;
+
+  if (!userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  return next({ ctx: { ...ctx, userId } });
+});

@@ -3,5 +3,8 @@
   "singleQuote": false,
   "printWidth": 100,
   "quoteProps": "preserve",
+  "sortTailwindcss": {
+    "stylesheet": "apps/client/styles.css"
+  },
   "ignorePatterns": ["*.gen.*"]
 }

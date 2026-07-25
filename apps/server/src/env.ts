@@ -1,6 +1,6 @@
 import { z } from "zod";
-import "dotenv/config";
-
+import "dotenv-expand/config";
+import process from "node:process";
 export const env = getEnv();
 
 function getEnv() {
@@ -8,6 +8,9 @@ function getEnv() {
     DATABASE_URL: z.url(),
     PORT: z.coerce.number().default(3000),
     CLIENT_ORIGIN: z.string().nonempty().optional(),
+
+    DONATION_ALERTS_CLIENT_ID: z.string().refine((str) => str.length > 0 && !isNaN(+str)),
+    DONATION_ALERTS_CLIENT_SECRET: z.string().nonempty(),
   });
 
   const result = EnvSchema.safeParse(process.env);

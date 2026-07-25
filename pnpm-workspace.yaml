@@ -5,3 +5,5 @@ autoInstallPeers: false
 verifyDepsBeforeRun: false
 allowBuilds:
   esbuild: true
+minimumReleaseAgeExclude:
+  - "@lebedevna/readonly-url"
