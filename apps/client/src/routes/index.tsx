@@ -1,9 +1,7 @@
 import { match } from "@lebedevna/match";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { trpc } from "../lib/trpc";
-import { useMemo } from "react";
 import { z } from "zod";
+
 import { useAuthUrl, useDonationsQ as useDonations, useHealthQ, useUserInfo } from "../hooks/api";
 
 export const Route = createFileRoute("/")({
@@ -34,7 +32,7 @@ function Home() {
       <pre>{JSON.stringify({ userInfo }, null, 2)}</pre>
       <p>{label}</p>
       <a href={authUrl} target="_self" className="text-blue-700 hover:underline">
-        link
+        auth: donation alerts
       </a>
       {success === true && (
         <div className="inline-flex items-center rounded-sm border border-green-600 bg-green-100 px-2 text-green-600">

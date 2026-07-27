@@ -6,4 +6,6 @@ verifyDepsBeforeRun: false
 allowBuilds:
   esbuild: true
 minimumReleaseAgeExclude:
-  - "@lebedevna/readonly-url"
+  - '@lebedevna/readonly-url'
+  - '@lebedevna/gofetch@0.1.0 || 0.1.4'
+  - '@lebedevna/safe-promise@0.1.0 || 0.2.2'

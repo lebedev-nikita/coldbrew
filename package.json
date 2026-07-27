@@ -1,13 +1,12 @@
 {
   "name": "omnistream",
   "private": true,
-  "scripts": {
-    "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
-  },
   "devDependencies": {
     "@types/node": "^24.13.3",
-    "oxfmt": "^0.60.0"
+    "concurrently": "^10.0.4",
+    "oxfmt": "^0.60.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   },
   "packageManager": "pnpm@11.17.0"
 }

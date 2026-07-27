@@ -1,6 +1,8 @@
-import { z } from "zod";
-import "dotenv-expand/config";
 import process from "node:process";
+
+import "dotenv-expand/config";
+import { z } from "zod";
+
 export const env = getEnv();
 
 function getEnv() {

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { number, string, z } from "zod";
 
 export const CurrencySchema = z.enum(["RUB"]);
 
@@ -12,6 +12,7 @@ export const AccessTokenSchema = z.string().nonempty().brand("access token");
 export type AccessToken = z.infer<typeof AccessTokenSchema>;
 
 export const DonationSchema = z.object({
+  donationId: z.number(),
   source: z.enum(["donationalerts"]),
   author: z.string().nullable(),
   message: z.string().nullable(),
@@ -20,3 +21,10 @@ export const DonationSchema = z.object({
   createdAt: z.date(),
 });
 export type Donation = z.infer<typeof DonationSchema>;
+
+export const UserInfoSchema = z.object({
+  userId: z.number(),
+
+  hasDonationalertsRefreshToken: z.boolean(),
+  hasDonationalertsAccessToken: z.boolean(),
+});

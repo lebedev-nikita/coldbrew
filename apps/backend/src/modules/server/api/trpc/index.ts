@@ -1,9 +1,11 @@
+import { env } from "@backend/env.js";
+import { sql } from "@backend/sensors/db/_config.js";
+import { donationStore } from "@backend/sensors/db/donation.js";
+import { userStore } from "@backend/sensors/db/user.js";
+import { DONATION_ALERTS_SCOPES } from "@backend/sensors/donationalerts.js";
 import { readonlyUrl } from "@lebedevna/readonly-url";
-import { donationAlerts } from "../../integrations/donationalerts.js";
-import { sql } from "../../sensors/db/_config.js";
-import { userStore } from "../../sensors/db/index.js";
+
 import { authenticatedProcedure, procedure, router } from "./_config.js";
-import { UnauthorizedError } from "../../errors.js";
 
 export const appRouter = router({
   health: procedure.query(async ({ ctx }) => {
@@ -12,23 +14,13 @@ export const appRouter = router({
   }),
 
   meta: procedure.query(() => {
-    const DONATION_ALERTS_APP_ID = "20116";
     const REDIRECT_URI = "http://localhost:3000/api/success";
 
-    const SCOPES = [
-      "oauth-user-show",
-      "oauth-donation-subscribe",
-      "oauth-donation-index",
-      "oauth-custom_alert-store",
-      "oauth-goal-subscribe",
-      "oauth-poll-subscribe",
-    ];
-
     const authUrl = readonlyUrl("https://www.donationalerts.com/oauth/authorize").withSearchParams({
-      "client_id": DONATION_ALERTS_APP_ID,
+      "client_id": env.DONATION_ALERTS_CLIENT_ID,
       "redirect_uri": REDIRECT_URI,
       "response_type": "code",
-      "scope": SCOPES.join(" "),
+      "scope": DONATION_ALERTS_SCOPES,
     }).href;
 
     return { authUrl };
@@ -40,19 +32,13 @@ export const appRouter = router({
     const user = await userStore.getUserInfo(ctx.userId);
     if (user) return user;
 
+    // TODO: better auth
     const createdUser = await userStore.createUser(ctx.userId);
     return createdUser;
   }),
 
   donations: authenticatedProcedure.query(async ({ ctx }) => {
-    const token = await userStore.getAccessToken(ctx.userId);
-    if (!token) throw new Error("access token not found");
-
-    const result = await donationAlerts.getDonations(token);
-    // TODO
-    if (result instanceof Error) return [];
-
-    return result;
+    return await donationStore.listDonations(ctx.userId);
   }),
 });
 

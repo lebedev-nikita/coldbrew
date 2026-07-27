@@ -6,5 +6,6 @@
   "sortTailwindcss": {
     "stylesheet": "apps/client/styles.css"
   },
-  "ignorePatterns": ["*.gen.*"]
+  "ignorePatterns": ["*.gen.*", "*.yaml"],
+  "sortImports": true
 }
