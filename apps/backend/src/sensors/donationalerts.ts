@@ -98,7 +98,7 @@ class DonationAlerts {
     });
   }
 
-  issueAccessToken(refreshToken: RefreshToken) {
+  issueNewTokens(refreshToken: RefreshToken) {
     const body = new URLSearchParams({
       grant_type: "refresh_token",
       refresh_token: refreshToken,
