@@ -1,5 +1,6 @@
 import { env } from "@backend/env.js";
 import { fetchJson } from "@backend/lib/neverthrow/fetchJson.js";
+import { validate } from "@backend/lib/neverthrow/validate.js";
 import {
   AccessToken,
   AccessTokenSchema,
@@ -7,7 +8,6 @@ import {
   RefreshToken,
   RefreshTokenSchema,
 } from "@backend/schemas.js";
-import { err, ok } from "neverthrow";
 import { z } from "zod";
 
 export const DONATION_ALERTS_SCOPES = [
@@ -45,12 +45,10 @@ class DonationAlerts {
 
     return fetchJson("https://www.donationalerts.com/api/v1/alerts/donations", {
       headers: { "Authorization": `Bearer ${accessToken}` },
-    }).andThen((data) => {
-      const parsed = schema.safeParse(data);
-      if (!parsed.success) return err(parsed.error);
-
-      return ok(
-        parsed.data.data.map(
+    })
+      .andThen((data) => validate(schema, data).map((v) => v.data))
+      .map((parsed) =>
+        parsed.map(
           (donation): Donation => ({
             donationId: donation.id,
             source: "donationalerts",
@@ -62,11 +60,10 @@ class DonationAlerts {
           }),
         ),
       );
-    });
   }
 
   // TODO: remove redirectUri?
-  getTokens(authCode: string, redirectUri: string) {
+  issueTokens(authCode: string, redirectUri: string) {
     const searchParams = new URLSearchParams({
       "grant_type": "authorization_code",
       "client_id": env.DONATION_ALERTS_CLIENT_ID,
@@ -87,18 +84,15 @@ class DonationAlerts {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: searchParams.toString(),
-    }).andThen((data) => {
-      const parsed = schema.safeParse(data);
-      if (!parsed.success) return err(parsed.error);
-
-      return ok({
-        accessToken: parsed.data.access_token,
-        refreshToken: parsed.data.refresh_token,
-      });
-    });
+    })
+      .andThen((data) => validate(schema, data))
+      .map((parsed) => ({
+        accessToken: parsed.access_token,
+        refreshToken: parsed.refresh_token,
+      }));
   }
 
-  issueNewTokens(refreshToken: RefreshToken) {
+  refreshTokens(refreshToken: RefreshToken) {
     const body = new URLSearchParams({
       grant_type: "refresh_token",
       refresh_token: refreshToken,
@@ -118,15 +112,12 @@ class DonationAlerts {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
-    }).andThen((data) => {
-      const result = schema.safeParse(data);
-      if (!result.success) return err(result.error);
-
-      return ok({
-        accessToken: result.data.access_token,
-        refreshToken: result.data.refresh_token,
-      });
-    });
+    })
+      .andThen((data) => validate(schema, data))
+      .map((parsed) => ({
+        accessToken: parsed.access_token,
+        refreshToken: parsed.refresh_token,
+      }));
   }
 }
 

@@ -13,7 +13,7 @@ describe("DonationAlerts", () => {
       const refreshToken = await userStore.getRefreshToken(userId);
       assert(refreshToken);
 
-      const res = (await donationAlerts.issueNewTokens(refreshToken))._unsafeUnwrap();
+      const res = (await donationAlerts.refreshTokens(refreshToken))._unsafeUnwrap();
 
       expect(res.refreshToken).not.toBe(refreshToken);
       expect(res.accessToken).not.toBe(oldAccessToken);

@@ -25,18 +25,20 @@ class UserStore {
     return UserInfoSchema.parse(rows[0]);
   }
 
-  async getUsers() {
+  async getUsersAuthenticatedInDonationAlerts() {
     const rows = await sql`
       SELECT user_id,
         donationalerts_access_token   AS access_token,
         donationalerts_refresh_token  AS refresh_token
       FROM "user"
+      WHERE donationalerts_access_token IS NOT NULL
+        AND donationalerts_refresh_token IS NOT NULL
     `;
 
     const schema = z.object({
       userId: UserIdSchema,
-      accessToken: AccessTokenSchema.nullable(),
-      refreshToken: RefreshTokenSchema.nullable(),
+      accessToken: AccessTokenSchema,
+      refreshToken: RefreshTokenSchema,
     });
 
     return z.array(schema).parse(rows);

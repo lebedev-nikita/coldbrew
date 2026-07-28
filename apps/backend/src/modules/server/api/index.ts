@@ -20,7 +20,7 @@ export const apiRouter = new Hono()
     const appUrl = readonlyUrl("http://localhost:5173/");
 
     return await donationAlerts
-      .getTokens(authCode, readonlyUrl(c.req.url).withSearch("").href)
+      .issueTokens(authCode, readonlyUrl(c.req.url).withSearch("").href)
       .match(
         async (tokens) => {
           await userStore.setTokens(userId, tokens.refreshToken, tokens.accessToken);

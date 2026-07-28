@@ -24,11 +24,11 @@ export class NetworkError extends createTaggedError({
 }
 
 function getText(response: Response) {
-  return ResultAsync.fromPromise(response.text(), (error) => new NetworkError(error));
+  return ResultAsync.fromPromise(response.text(), (e) => new NetworkError(e));
 }
 
 export function fetchJson(input: RequestInfo | URL, init?: RequestInit) {
-  return ResultAsync.fromPromise(fetch(input, init), (error) => new NetworkError(error))
+  return ResultAsync.fromPromise(fetch(input, init), (e) => new NetworkError(e))
     .andThen((res) =>
       getText(res).andThen((text) => {
         if (res.status == 401) return err(new UnauthorizedError({ message: text }));

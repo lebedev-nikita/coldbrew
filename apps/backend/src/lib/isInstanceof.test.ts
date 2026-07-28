@@ -16,7 +16,7 @@ class Error3 extends createTaggedError({
 }) {}
 
 describe("isInstanceOf", () => {
-  it("", () => {
+  it("works", () => {
     const b: Error1 | Error2 = new Error1({ message: "error 1" }) as any;
 
     if (isInstanceof(b, Error1)) {

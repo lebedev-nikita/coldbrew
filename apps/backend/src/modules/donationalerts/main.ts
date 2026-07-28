@@ -5,39 +5,34 @@ import { donationStore } from "@backend/sensors/db/donation.js";
 import { userStore } from "@backend/sensors/db/user.js";
 import { donationAlerts } from "@backend/sensors/donationalerts.js";
 import delay from "delay";
-import { err, ResultAsync } from "neverthrow";
 
-function updateTokensInDb(userId: UserId, refreshToken: RefreshToken) {
-  return donationAlerts
-    .issueNewTokens(refreshToken)
-    .andTee((tokens) =>
-      ResultAsync.fromSafePromise(
-        userStore.setTokens(userId, tokens.refreshToken, tokens.accessToken),
-      ),
-    );
-}
+async function syncUserDonations(
+  userId: UserId,
+  accessToken: AccessToken,
+  refreshToken: RefreshToken,
+) {
+  let $donations = await donationAlerts.getDonations(accessToken);
 
-function pullDonations(userId: UserId, accessToken: AccessToken, refreshToken: RefreshToken) {
-  return donationAlerts.getDonations(accessToken).orElse((error) => {
-    if (!isInstanceof(error, UnauthorizedError)) return err(error);
+  if ($donations.isErr() && isInstanceof($donations.error, UnauthorizedError)) {
+    const $tokens = await donationAlerts.refreshTokens(refreshToken);
+    if ($tokens.isOk()) {
+      await userStore.setTokens(userId, $tokens.value.refreshToken, $tokens.value.accessToken);
+      $donations = await donationAlerts.getDonations($tokens.value.accessToken);
+    }
+  }
 
-    return updateTokensInDb(userId, refreshToken).andThen((tokens) =>
-      donationAlerts.getDonations(tokens.accessToken),
-    );
-  });
+  const inserted = await $donations.match(
+    (donations) => donationStore.insertDonations(userId, donations),
+    () => "TODO: handle errors",
+  );
 }
 
 export async function main() {
   while (true) {
-    for (const user of await userStore.getUsers()) {
-      const { userId, accessToken, refreshToken } = user;
-      if (!accessToken || !refreshToken) continue;
+    const users = await userStore.getUsersAuthenticatedInDonationAlerts();
 
-      await pullDonations(userId, accessToken, refreshToken).match(
-        async (donations) => await donationStore.insertDonations(userId, donations),
-        // TODO: handle errors
-        () => {},
-      );
+    for (const user of users) {
+      await syncUserDonations(user.userId, user.accessToken, user.refreshToken);
 
       await delay(1000);
     }
