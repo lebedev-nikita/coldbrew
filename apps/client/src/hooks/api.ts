@@ -11,9 +11,5 @@ export function useDonationsQ() {
 }
 
 export function useAuthUrl() {
-  return useSuspenseQuery(trpc.meta.queryOptions()).data.authUrl;
-}
-
-export function useHealthQ() {
-  return useQuery(trpc.health.queryOptions(undefined, { refetchInterval: 60e3 }));
+  return useSuspenseQuery(trpc.authUrls.queryOptions()).data;
 }

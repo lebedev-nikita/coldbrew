@@ -90,6 +90,15 @@ class UserStore {
 
     return schema.parse(rows[0])?.donationalertsRefreshToken;
   }
+
+  async disconnectDonationAlerts(userId: UserId) {
+    await sql`
+      UPDATE "user" SET
+        donationalerts_refresh_token = null,
+        donationalerts_access_token = null
+      WHERE user_id = ${userId}
+    `;
+  }
 }
 
 export const userStore = new UserStore();

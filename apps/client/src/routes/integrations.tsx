@@ -1,5 +1,8 @@
+import { Button } from "@client/components/ui/button";
+import { trpc } from "@client/lib/trpc";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Bell, Check, ChevronRight, Menu, Plug, ShieldCheck } from "lucide-react";
+import { Check, ChevronRight, ShieldCheck } from "lucide-react";
 
 import { useAuthUrl, useUserInfo } from "../hooks/api";
 
@@ -7,32 +10,27 @@ export const Route = createFileRoute("/integrations")({
   component: RouteComponent,
 });
 
+function useDisconnectM() {
+  const client = useQueryClient();
+
+  return useMutation(
+    trpc.integration.disconnectDonationAlerts.mutationOptions({
+      onSuccess() {
+        client.invalidateQueries({ queryKey: trpc.userInfo.queryKey() });
+      },
+    }),
+  );
+}
+
 function RouteComponent() {
   const authUrl = useAuthUrl();
   const userInfo = useUserInfo();
   const connected = userInfo !== null && userInfo.hasDonationalertsAccessToken;
 
+  const disconnectM = useDisconnectM();
+
   return (
     <section className="flex min-w-0 flex-1 flex-col">
-      <header className="flex h-[58px] items-center justify-between border-b border-[#ebeaf1] bg-white/75 px-5 sm:h-[70px] sm:px-[clamp(24px,4vw,62px)]">
-        <button className="text-[#4e4a60] lg:hidden" aria-label="Open navigation">
-          <Menu aria-hidden="true" />
-        </button>
-        <div className="hidden items-center gap-2 text-xs font-medium text-[#6f6c81] lg:flex">
-          <Plug aria-hidden="true" size={15} />
-          Connect your streaming tools
-        </div>
-        <div className="ml-auto flex items-center gap-5">
-          <button className="relative p-1 text-[#646175]" aria-label="Notifications">
-            <Bell aria-hidden="true" />
-            <span className="absolute top-0 right-0 size-2 rounded-full border-2 border-white bg-red-400" />
-          </button>
-          <a className="hidden text-[13px] font-semibold text-[#69667a] sm:block" href="#help">
-            Help center
-          </a>
-        </div>
-      </header>
-
       <div className="mx-auto w-full max-w-5xl px-[clamp(18px,4vw,62px)] py-7 sm:py-12">
         <p className="mb-2.5 text-xs font-bold tracking-wide text-[#9895a6] uppercase">Platforms</p>
         <h1 className="text-[clamp(27px,3vw,33px)] font-bold tracking-tight text-[#27243a]">
@@ -49,7 +47,15 @@ function RouteComponent() {
             </div>
             <div className="min-w-0 grow">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-base font-semibold text-[#403c52]">DonationAlerts</h2>
+                <h2 className="text-base font-semibold text-[#403c52]">
+                  <a
+                    href="https://donationalerts.com/dashboard"
+                    className="cursor-pointer hover:underline"
+                    target="_blank"
+                  >
+                    DonationAlerts
+                  </a>
+                </h2>
                 <span
                   className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${connected ? "bg-emerald-50 text-emerald-700" : "bg-orange-50 text-orange-600"}`}
                 >
@@ -63,13 +69,24 @@ function RouteComponent() {
                   : "Import donations from DonationAlerts automatically."}
               </p>
             </div>
-            <a
-              className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
-              href={authUrl}
-            >
-              {connected ? "Reconnect" : "Connect DonationAlerts"}
-              <ChevronRight aria-hidden="true" size={16} />
-            </a>
+            {connected ? (
+              <Button
+                variant="destructive"
+                size="lg"
+                disabled={disconnectM.isPending}
+                onClick={() => disconnectM.mutate({ source: "donationalerts" })}
+              >
+                {disconnectM.isPending ? "Disconnecting…" : "Disconnect"}
+              </Button>
+            ) : (
+              <a
+                className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+                href={authUrl.donationAlerts}
+              >
+                {"Connect DonationAlerts"}
+                <ChevronRight aria-hidden="true" size={16} />
+              </a>
+            )}
           </div>
           <div className="flex items-center gap-2 border-t border-[#f0eff3] bg-[#fcfcfd] px-5 py-3 text-xs text-[#888597] sm:px-6">
             <ShieldCheck aria-hidden="true" size={15} className="shrink-0 text-violet-600" />

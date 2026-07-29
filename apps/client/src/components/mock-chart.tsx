@@ -2,7 +2,7 @@ type Props = {
   className?: string;
 };
 
-export default function OmnistreamLogo(props: Props) {
+export default function MockChart(props: Props) {
   return (
     <svg
       className={props.className}

@@ -67,7 +67,7 @@ function Root() {
           </div>
         </div>
       </aside>
-      <div className="grow overflow-y-scroll">
+      <div className="grow overflow-y-auto">
         <Outlet />
       </div>
     </main>

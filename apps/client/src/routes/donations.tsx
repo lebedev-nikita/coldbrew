@@ -100,25 +100,6 @@ function Donations() {
 
   return (
     <section className="flex min-w-0 flex-1 flex-col">
-      <header className="flex h-[58px] items-center justify-between border-b border-[#ebeaf1] bg-white/75 px-5 sm:h-[70px] sm:px-[clamp(24px,4vw,62px)]">
-        <button className="text-[#4e4a60] lg:hidden" aria-label="Open navigation">
-          <Menu aria-hidden="true" />
-        </button>
-        <div className="hidden items-center gap-2 text-xs font-medium text-[#6f6c81] lg:flex">
-          <span className="size-2 rounded-full bg-emerald-500 ring-4 ring-emerald-100" />
-          Donations update automatically
-        </div>
-        <div className="ml-auto flex items-center gap-5">
-          <button className="relative p-1 text-[#646175]" aria-label="Notifications">
-            <Bell aria-hidden="true" />
-            <span className="absolute top-0 right-0 size-2 rounded-full border-2 border-white bg-red-400" />
-          </button>
-          <a className="hidden text-[13px] font-semibold text-[#69667a] sm:block" href="#help">
-            Help center
-          </a>
-        </div>
-      </header>
-
       <div className="mx-auto w-full max-w-7xl px-[clamp(18px,4vw,62px)] py-7 sm:py-12">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>

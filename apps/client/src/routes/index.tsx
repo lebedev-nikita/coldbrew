@@ -1,10 +1,10 @@
 import { Metric } from "@client/components/dashboard/metric";
-import OmnistreamLogo from "@client/components/omnistream-logo";
-import { createFileRoute } from "@tanstack/react-router";
-import { Bell, ChevronRight, Copy, Menu, Share2, Sparkles, Wallet } from "lucide-react";
+import MockChart from "@client/components/mock-chart";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ChevronRight, Copy, Share2, Sparkles, Wallet } from "lucide-react";
 import { z } from "zod";
 
-import { useAuthUrl, useDonationsQ as useDonations, useHealthQ, useUserInfo } from "../hooks/api";
+import { useAuthUrl, useDonationsQ as useDonations, useUserInfo } from "../hooks/api";
 
 export const Route = createFileRoute("/")({
   component: Overview,
@@ -49,7 +49,6 @@ const panel = "rounded-xl border border-[#eae8ef] bg-white";
 function Overview() {
   const userInfo = useUserInfo();
   const authUrl = useAuthUrl();
-  const healthQ = useHealthQ();
   const donationsQ = useDonations();
   const success = Route.useSearch({ select: (search) => search.success });
   const donationAlertsConnected = userInfo !== null && userInfo.hasDonationalertsAccessToken;
@@ -66,28 +65,9 @@ function Overview() {
       tone: "bg-violet-100 text-violet-700",
     })) ?? demoDonations;
   const total = donations.reduce((sum, donation) => sum + donation.amount, 0);
-  const connected = healthQ.status === "success";
 
   return (
     <section className="flex min-w-0 flex-1 flex-col" id="top">
-      <header className="flex h-[58px] items-center justify-between border-b border-[#ebeaf1] bg-white/75 px-5 sm:h-[70px] sm:px-[clamp(24px,4vw,62px)]">
-        <button className="text-[#4e4a60] lg:hidden" aria-label="Open navigation">
-          <Menu aria-hidden="true" />
-        </button>
-        <div className="hidden items-center gap-2 text-xs font-medium text-[#6f6c81] lg:flex">
-          <span className="size-2 rounded-full bg-emerald-500 ring-4 ring-emerald-100" />
-          All systems operational
-        </div>
-        <div className="ml-auto flex items-center gap-5">
-          <button className="relative p-1 text-[#646175]" aria-label="Notifications">
-            <Bell aria-hidden="true" />
-            <span className="absolute top-0 right-0 size-2 rounded-full border-2 border-white bg-red-400" />
-          </button>
-          <a className="hidden text-[13px] font-semibold text-[#69667a] sm:block" href="#help">
-            Help center
-          </a>
-        </div>
-      </header>
       <div className="mx-auto w-full max-w-7xl px-[clamp(18px,4vw,62px)] py-7 sm:py-12">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div>
@@ -146,12 +126,9 @@ function Overview() {
                 <h2 className="text-[15px] font-semibold text-[#353248]">Recent activity</h2>
                 <p className="mt-1.5 text-xs text-[#9491a1]">Every donation, all in one place.</p>
               </div>
-              <a
-                href="#all-donations"
-                className="flex items-center text-xs font-bold text-violet-600"
-              >
+              <Link to="/donations" className="flex items-center text-xs font-bold text-violet-600">
                 View all <ChevronRight aria-hidden="true" size={16} />
-              </a>
+              </Link>
             </div>
             <div>
               {donations.slice(0, 3).map((donation, index) => (
@@ -200,7 +177,7 @@ function Overview() {
                 <span>₽2k</span>
                 <span>₽0</span>
               </div>
-              <OmnistreamLogo className="h-[164px] w-full" />
+              <MockChart className="h-[164px] w-full" />
               <div className="flex justify-between text-[10px] text-[#aaa6b5]">
                 <span>Jun 29</span>
                 <span>Jul 6</span>
@@ -237,7 +214,7 @@ function Overview() {
             </div>
             <a
               className="ml-auto flex items-center gap-1 rounded-lg border border-[#e4e2e9] px-2.5 py-2 text-[11px] font-bold text-[#5f5b70]"
-              href={authUrl}
+              href={authUrl.donationAlerts}
             >
               Manage <ChevronRight aria-hidden="true" size={16} />
             </a>
@@ -259,16 +236,6 @@ function Overview() {
           </article>
         </section>
       </div>
-      <footer className="mt-auto flex items-center justify-center gap-2 px-5 py-5 text-[10px] text-[#a09dab]">
-        <span
-          className={`size-1.5 rounded-full ${connected ? "bg-emerald-500" : "bg-orange-400"}`}
-        />
-        {connected ? "Data updates automatically" : "Trying to reach your data"}
-        <span>•</span>
-        <a className="text-[#8b869b] underline" href="#status">
-          System status
-        </a>
-      </footer>
     </section>
   );
 }
