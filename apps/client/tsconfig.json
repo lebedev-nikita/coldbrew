@@ -8,6 +8,7 @@
     "resolveJsonModule": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "types": ["vite/client", "node"],
     "paths": {
       "@backend/*": ["../backend/src/*"],
       "@client/*": ["./src/*"]

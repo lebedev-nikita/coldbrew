@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144" fill="none">
+  <defs>
+    <linearGradient id="gradient" x1="25" y1="15" x2="118" y2="136" gradientUnits="userSpaceOnUse">
+      <stop stop-color="oklch(70.2% 0.183 293.541)" />
+      <stop offset="1" stop-color="oklch(49.1% 0.27 292.581)" />
+    </linearGradient>
+  </defs>
+
+  <circle cx="72" cy="72" r="72" fill="url(#gradient)" />
+
+  <rect x="42" y="42" width="60" height="60" rx="18" fill="white" transform="rotate(38 72 72)" />
+</svg>

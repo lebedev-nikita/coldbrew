@@ -2,6 +2,8 @@ import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
 import { Bell, Ellipsis, LayoutDashboard, Moon, Plug, Settings, Sun, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import logo from "../../assets/logo.svg";
+
 const navItem =
   "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-[#77758b] transition hover:bg-violet-50 hover:text-violet-700";
 const activeNavItem = "bg-violet-100 font-bold text-violet-700";
@@ -23,11 +25,9 @@ function Root() {
       <aside className="hidden w-[244px] shrink-0 flex-col border-r border-[#ebeaf1] bg-white px-4 pt-8 pb-5 transition-colors duration-300 lg:flex dark:border-white/10 dark:bg-[#181722]">
         <Link
           to="/"
-          className="flex items-center gap-2.5 px-3 text-xl font-bold tracking-tight text-[#292640] dark:text-white"
+          className="flex items-center gap-2.5 px-1 text-xl font-bold tracking-tight text-[#292640] dark:text-white"
         >
-          <span className="flex size-6 rotate-[-7deg] items-center justify-center rounded-lg bg-linear-to-br from-violet-400 to-violet-700">
-            <span className="size-2.5 rotate-45 rounded-[3px] bg-white" />
-          </span>
+          <img src={logo} className="h-[24px]" />
           omnistream
         </Link>
         <nav className="mt-11 grid gap-1" aria-label="Main navigation">
