@@ -5,7 +5,7 @@ import { z } from "zod";
 import { authenticatedProcedure, router } from "./_config.js";
 
 export const integrationRouter = router({
-  disconnectDonationAlerts: authenticatedProcedure
+  disconnect: authenticatedProcedure
     .input(
       z.object({
         source: DonationSourceSchema,

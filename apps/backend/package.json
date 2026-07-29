@@ -13,6 +13,7 @@
     "@hono/trpc-server": "^0.4.0",
     "@lebedevna/readonly-url": "^0.2.0",
     "@trpc/server": "^11.4.3",
+    "dayjs": "^1.11.21",
     "dedent-js": "^1.0.1",
     "delay": "^7.0.0",
     "dotenv-expand": "^13.0.0",

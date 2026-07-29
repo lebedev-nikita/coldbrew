@@ -17,34 +17,13 @@ const rubles = new Intl.NumberFormat("ru-RU", {
   maximumFractionDigits: 0,
 });
 
-const demoDonations = [
-  {
-    author: "Artem M.",
-    amount: 2500,
-    message: "Keep pushing, your streams have been incredible lately!",
-    time: "2 min ago",
-    initials: "AM",
-    tone: "bg-orange-100 text-orange-700",
-  },
-  {
-    author: "Nika",
-    amount: 1000,
-    message: "That clutch was unreal. GG!",
-    time: "18 min ago",
-    initials: "NK",
-    tone: "bg-violet-100 text-violet-700",
-  },
-  {
-    author: "alexk",
-    amount: 500,
-    message: "For the next coffee ☕",
-    time: "46 min ago",
-    initials: "AK",
-    tone: "bg-sky-100 text-sky-700",
-  },
-];
-
 const panel = "rounded-xl border border-[#eae8ef] bg-white";
+
+const fmtDate = (d: Date) => {
+  const { round } = Math;
+  const intl = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+  return intl.format(round((d.getTime() - Date.now()) / 3_600_000), "hour");
+};
 
 function Overview() {
   const userInfo = useUserInfo();
@@ -52,18 +31,18 @@ function Overview() {
   const donationsQ = useDonations();
   const success = Route.useSearch({ select: (search) => search.success });
   const donationAlertsConnected = userInfo !== null && userInfo.hasDonationalertsAccessToken;
+
   const donations =
     donationsQ.data?.map((donation) => ({
       author: donation.author ?? "Anonymous",
       amount: donation.amount,
       message: donation.message ?? "Sent a donation",
-      time: new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(
-        Math.round((donation.createdAt.getTime() - Date.now()) / 3_600_000),
-        "hour",
-      ),
-      initials: (donation.author ?? "A").slice(0, 2).toUpperCase(),
+      time: fmtDate(donation.createdAt),
+      get initials() {
+        return (this.author ?? "A").slice(0, 2).toUpperCase();
+      },
       tone: "bg-violet-100 text-violet-700",
-    })) ?? demoDonations;
+    })) ?? [];
   const total = donations.reduce((sum, donation) => sum + donation.amount, 0);
 
   return (

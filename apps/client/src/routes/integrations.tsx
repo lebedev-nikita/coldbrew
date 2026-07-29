@@ -14,7 +14,7 @@ function useDisconnectM() {
   const client = useQueryClient();
 
   return useMutation(
-    trpc.integration.disconnectDonationAlerts.mutationOptions({
+    trpc.integration.disconnect.mutationOptions({
       onSuccess() {
         client.invalidateQueries({ queryKey: trpc.userInfo.queryKey() });
       },
@@ -48,6 +48,7 @@ function RouteComponent() {
             <div className="min-w-0 grow">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-base font-semibold text-[#403c52]">
+                  {/* TODO: add payment link */}
                   <a
                     href="https://donationalerts.com/dashboard"
                     className="cursor-pointer hover:underline"

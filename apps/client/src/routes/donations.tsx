@@ -1,4 +1,5 @@
 import { Button } from "@client/components/ui/button";
+import { Donation } from "@omnistream/server";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Bell,
@@ -52,6 +53,26 @@ function formatRelativeDate(date: Date) {
   return relativeTime.format(round(minutes / (24 * 60)), "day");
 }
 
+function exportDonations(donations: Donation[]) {
+  const headers = ["Supporter", "Amount", "Currency", "Platform", "Message", "Date"];
+  const rows = donations.map((donation) => [
+    donation.author ?? "Anonymous",
+    String(donation.amount),
+    donation.currency,
+    "DonationAlerts",
+    donation.message ?? "",
+    donation.createdAt.toISOString(),
+  ]);
+  const escape = (value: string) => `"${value.replaceAll('"', '""')}"`;
+  const content = [headers, ...rows].map((row) => row.map(escape).join(",")).join("\n");
+  const url = URL.createObjectURL(new Blob([content], { type: "text/csv;charset=utf-8" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "omnistream-donations.csv";
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
 function Donations() {
   const donationsQ = useDonationsQ();
   const [query, setQuery] = useState("");
@@ -78,52 +99,9 @@ function Donations() {
   const total = filteredDonations.reduce((sum, donation) => sum + donation.amount, 0);
   const average = filteredDonations.length ? total / filteredDonations.length : 0;
 
-  function exportDonations() {
-    const headers = ["Supporter", "Amount", "Currency", "Platform", "Message", "Date"];
-    const rows = filteredDonations.map((donation) => [
-      donation.author ?? "Anonymous",
-      String(donation.amount),
-      donation.currency,
-      "DonationAlerts",
-      donation.message ?? "",
-      donation.createdAt.toISOString(),
-    ]);
-    const escape = (value: string) => `"${value.replaceAll('"', '""')}"`;
-    const content = [headers, ...rows].map((row) => row.map(escape).join(",")).join("\n");
-    const url = URL.createObjectURL(new Blob([content], { type: "text/csv;charset=utf-8" }));
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "omnistream-donations.csv";
-    anchor.click();
-    URL.revokeObjectURL(url);
-  }
-
   return (
     <section className="flex min-w-0 flex-1 flex-col">
-      <div className="mx-auto w-full max-w-7xl px-[clamp(18px,4vw,62px)] py-7 sm:py-12">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="mb-2.5 text-xs font-bold tracking-wide text-[#9895a6] uppercase">
-              Money received
-            </p>
-            <h1 className="text-[clamp(27px,3vw,33px)] font-bold tracking-tight text-[#27243a]">
-              Donations
-            </h1>
-            <p className="mt-2.5 text-sm text-[#888597]">
-              Every contribution from your connected platforms.
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            className="w-full text-[#5f5b70] sm:w-auto"
-            disabled={!filteredDonations.length}
-            onClick={exportDonations}
-          >
-            <Download aria-hidden="true" />
-            Export CSV
-          </Button>
-        </div>
-
+      <div className="mx-auto w-full max-w-7xl px-[clamp(18px,4vw,62px)]">
         <section
           className="mt-7 grid gap-4 sm:mt-9 md:grid-cols-3"
           aria-label="Donation statistics"

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// TODO: support other currencies
 export const CurrencySchema = z.enum(["RUB"]);
 export type Currency = z.infer<typeof CurrencySchema>;
 

@@ -4,10 +4,12 @@ import { validate } from "@backend/lib/neverthrow/validate.js";
 import {
   AccessToken,
   AccessTokenSchema,
+  CurrencySchema,
   Donation,
   RefreshToken,
   RefreshTokenSchema,
 } from "@backend/schemas.js";
+import dayjs from "dayjs";
 import { z } from "zod";
 
 export const DONATION_ALERTS_SCOPES = [
@@ -28,10 +30,9 @@ class DonationAlerts {
       message_type: z.string(),
       message: z.string().nullable(),
       amount: z.number(),
-      // TODO
-      currency: z.enum(["RUB"]),
+      currency: CurrencySchema,
       is_shown: z.number(),
-      created_at: z.coerce.date(),
+      created_at: z.coerce.date().transform((d) => dayjs(d).add(3, "h").toDate()),
       shown_at: z.string().nullable(),
     });
 
