@@ -34,7 +34,7 @@ export async function main() {
     for (const user of users) {
       await syncUserDonations(user.userId, user.accessToken, user.refreshToken);
 
-      await delay(1000);
+      await delay(2500);
     }
   }
 }

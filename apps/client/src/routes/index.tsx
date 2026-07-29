@@ -208,7 +208,7 @@ function Overview() {
                 Bring your donations to life on stream with a custom browser source.
               </p>
             </div>
-            <button className="z-10 ml-auto flex items-center gap-1 rounded-lg bg-white px-2.5 py-2 text-[11px] font-bold text-violet-700">
+            <button className="z-10 ml-auto flex items-center gap-1 rounded-lg bg-white px-2.5 py-2 text-[11px] font-bold text-violet-700 dark:text-white">
               Create overlay <ChevronRight aria-hidden="true" size={17} />
             </button>
             <span className="absolute -top-16 -right-16 size-[148px] rounded-full border border-white/15" />

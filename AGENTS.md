@@ -8,7 +8,12 @@ This app is created for streamers. It connects to many donation platforms (such 
 - Use `tRPC` for client-server interactions
 - Wrap `fetch`-requests to foreign services into neverthrow's `Result` to improve durabilty
 - Use `shadcn` for UI components
+
+## Frontend Styling
+
 - Use `tailwindcss` for styling
+- Use `flex`, `gap` and `padding` instead of margins wherever possible
+- Pass external positioning (`margin`, `width`, `grow` etc) of the root element of components via `className` instead of hardcoding it inside component. It is similar to modifiers in BEM methodology.
 
 ## Scripts
 

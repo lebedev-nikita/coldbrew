@@ -118,6 +118,34 @@
   --sidebar-ring: oklch(0.73 0.15 291);
 }
 
+/* Legacy dashboard screens use a fixed light palette; these keep every existing
+   screen readable while the semantic shadcn tokens above handle new UI. */
+.dark [class*="bg-white"],
+.dark [class*="bg-[#fcfcfd"],
+.dark [class*="bg-[#f7f6f9"] {
+  background-color: oklch(0.235 0.024 286);
+}
+
+.dark [class*="border-[#"] {
+  border-color: oklch(1 0 0 / 10%);
+}
+
+.dark [class*="text-[#"] {
+  color: oklch(0.86 0.018 286);
+}
+
+.dark [class*="bg-[#f0edf7"] {
+  background-color: oklch(0.31 0.05 286);
+}
+
+.dark [class*="bg-violet-50"] {
+  background-color: oklch(0.29 0.07 291);
+}
+
+.dark [class*="bg-violet-100"] {
+  background-color: oklch(0.32 0.08 291);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
