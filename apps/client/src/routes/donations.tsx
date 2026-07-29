@@ -183,7 +183,7 @@ function Donations() {
                 return (
                   <div
                     className="flex gap-3 px-4 py-4 sm:items-center sm:px-5"
-                    key={`${donation.source}-${donation.donationId}`}
+                    key={`${donation.donationSource}-${donation.donationId}`}
                   >
                     <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-violet-100 text-[10px] font-bold text-violet-700">
                       {getInitials(author)}

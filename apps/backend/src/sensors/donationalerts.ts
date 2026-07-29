@@ -52,7 +52,7 @@ class DonationAlerts {
         parsed.map(
           (donation): Donation => ({
             donationId: donation.id,
-            source: "donationalerts",
+            donationSource: "donationalerts",
             amount: donation.amount,
             author: donation.username,
             currency: donation.currency,

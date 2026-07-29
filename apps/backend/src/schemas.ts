@@ -18,7 +18,7 @@ export type DonationSource = z.infer<typeof DonationSourceSchema>;
 
 export const DonationSchema = z.object({
   donationId: z.number(),
-  source: DonationSourceSchema,
+  donationSource: DonationSourceSchema,
   author: z.string().nullable(),
   message: z.string().nullable(),
   currency: CurrencySchema,

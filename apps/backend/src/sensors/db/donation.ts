@@ -11,12 +11,12 @@ class DonationStore {
     const rows = await sql`
       WITH input AS (
         SELECT *
-        FROM jsonb_to_recordset(${input}::jsonb) as t (donation_id int, source donation_source, author text, message text, currency currency, amount float, created_at js_date)
+        FROM jsonb_to_recordset(${input}::jsonb) as t (donation_id int, donation_source donation_source, author text, message text, currency currency, amount float, created_at js_date)
       )
-      INSERT INTO donation (donation_id, source, user_id,   author, message, currency, amount, created_at)
-      SELECT                donation_id, source, ${userId}, author, message, currency, amount, created_at
+      INSERT INTO donation (donation_id, donation_source, user_id,   author, message, currency, amount, created_at)
+      SELECT                donation_id, donation_source, ${userId}, author, message, currency, amount, created_at
       FROM input
-      ON CONFLICT (donation_id, source) DO NOTHING
+      ON CONFLICT (donation_id, donation_source) DO NOTHING
       RETURNING *
     `;
 

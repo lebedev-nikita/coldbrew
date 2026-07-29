@@ -10,13 +10,22 @@ CREATE TABLE "user" (
 );
 
 CREATE TABLE donation (
-  donation_id int NOT NULL,
-  source      donation_source NOT NULL,
-  user_id     int             NOT NULL REFERENCES "user" (user_id),
-  author      text                NULL,
-  message     text                NULL,
-  currency    currency        NOT NULL,
-  amount      float           NOT NULL,
-  created_at  js_date         NOT NULL,
-  PRIMARY KEY (donation_id, source)
+  donation_id     int             NOT NULL,
+  donation_source donation_source NOT NULL,
+  user_id         int             NOT NULL REFERENCES "user" (user_id),
+  author          text                NULL,
+  message         text                NULL,
+  currency        currency        NOT NULL,
+  amount          float           NOT NULL,
+  created_at      js_date         NOT NULL,
+  PRIMARY KEY (donation_id, donation_source)
+);
+
+CREATE TABLE video (
+  video_id        serial PRIMARY KEY,
+  donation_id     int NOT NULL,
+  donation_source donation_source NOT NULL,
+  url             text NOT NULL,
+  is_watched      bool NOT NULL DEFAULT false,
+  FOREIGN KEY (donation_id, donation_source) REFERENCES donation(donation_id, donation_source)
 );
