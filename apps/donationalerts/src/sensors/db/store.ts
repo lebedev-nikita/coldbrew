@@ -1,0 +1,67 @@
+import { jsonb } from "@omnistream/packages/jsonb.js";
+import {
+  AccessToken,
+  AccessTokenSchema,
+  Donation,
+  DonationSchema,
+  RefreshToken,
+  RefreshTokenSchema,
+  UserId,
+  UserIdSchema,
+} from "@omnistream/packages/schemas.js";
+import postgres from "postgres";
+import { z } from "zod";
+
+import { env } from "../../env.js";
+
+export const sql = postgres(env.DATABASE_URL, {
+  transform: postgres.camel,
+});
+
+export class Store {
+  async insertDonations(userId: UserId, donations: Donation[]) {
+    const input = jsonb(sql, donations);
+
+    const rows = await sql`
+      WITH input AS (
+        SELECT *
+        FROM jsonb_to_recordset(${input}::jsonb) as t (donation_id int, donation_source donation_source, author text, message text, currency currency, amount float, created_at js_date)
+      )
+      INSERT INTO donation (donation_id, donation_source, user_id,   author, message, currency, amount, created_at)
+      SELECT                donation_id, donation_source, ${userId}, author, message, currency, amount, created_at
+      FROM input
+      ON CONFLICT (donation_id, donation_source) DO NOTHING
+      RETURNING *
+    `;
+
+    return z.array(DonationSchema).parse(rows);
+  }
+
+  async getUsersAuthenticatedInDonationAlerts() {
+    const rows = await sql`
+      SELECT user_id,
+        donationalerts_access_token   AS access_token,
+        donationalerts_refresh_token  AS refresh_token
+      FROM "user"
+      WHERE donationalerts_access_token IS NOT NULL
+        AND donationalerts_refresh_token IS NOT NULL
+    `;
+
+    const schema = z.object({
+      userId: UserIdSchema,
+      accessToken: AccessTokenSchema,
+      refreshToken: RefreshTokenSchema,
+    });
+
+    return z.array(schema).parse(rows);
+  }
+
+  async setTokens(userId: UserId, refreshToken: RefreshToken, accessToken: AccessToken) {
+    await sql`
+      UPDATE "user" SET
+        donationalerts_refresh_token = ${refreshToken},
+        donationalerts_access_token = ${accessToken}
+      WHERE user_id = ${userId}
+    `;
+  }
+}

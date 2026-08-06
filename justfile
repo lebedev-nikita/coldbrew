@@ -1,7 +1,3 @@
-set dotenv-load
-set dotenv-required
-set dotenv-path := "apps/backend/.env"
-
 [default]
 default:
   @just --list
@@ -9,22 +5,31 @@ default:
 install:
   pnpm install
 
-dev-backend:
-  cd apps/backend && pnpm exec tsx --watch src/index.ts
+dev-server:
+  cd apps/server         && pnpm exec dotenvx run -f ../../.env -- pnpm exec tsx --watch src/index.ts
+
+dev-donationalerts:
+  cd apps/donationalerts && pnpm exec dotenvx run -f ../../.env -- pnpm exec tsx --watch src/index.ts
 
 dev-client:
   cd apps/client && pnpm exec vite
 
 dev:
-  pnpm exec concurrently -n 'client,backend' 'just dev-client' 'just dev-backend'
+  pnpm exec concurrently -n 'client,server,donationalerts' 'just dev-client' 'just dev-server' 'just dev-donationalerts'
 
 typecheck-client:
   cd apps/client && pnpm exec tsc --noEmit
 
-typecheck-backend:
-  cd apps/backend && pnpm exec tsc --noEmit
+typecheck-server:
+  cd apps/server && pnpm exec tsc --noEmit
 
-typecheck: typecheck-client typecheck-backend
+typecheck-donationalerts:
+  cd apps/donationalerts && pnpm exec tsc --noEmit
+
+typecheck-packages:
+  cd packages && pnpm exec tsc --noEmit
+
+typecheck: typecheck-client typecheck-server typecheck-donationalerts typecheck-packages
 
 
 fmt:
@@ -40,10 +45,16 @@ build-client: install
 test-client: install
   cd apps/client && pnpm exec vitest --run --passWithNoTests
 
-test-backend: install
-  cd apps/backend && pnpm exec vitest --run --passWithNoTests
+test-server: install
+  cd apps/server && pnpm exec vitest --run --passWithNoTests
 
-test: test-backend test-client
+test-donationalerts: install
+  cd apps/donationalerts && pnpm exec vitest --run --passWithNoTests
+
+test-packages: install
+  cd packages && pnpm exec vitest --run --passWithNoTests
+
+test: test-server test-donationalerts test-packages test-client
 
 lint: test fmt-check
 

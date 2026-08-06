@@ -2,6 +2,7 @@
   "name": "omnistream",
   "private": true,
   "devDependencies": {
+    "@dotenvx/dotenvx": "^2.19.2",
     "@types/node": "^24.13.3",
     "concurrently": "^10.0.4",
     "oxfmt": "^0.60.0",
