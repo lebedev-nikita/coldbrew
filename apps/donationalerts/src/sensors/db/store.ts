@@ -19,18 +19,18 @@ export const sql = postgres(env.DATABASE_URL, {
 });
 
 export class Store {
-  async insertDonations(userId: UserId, donations: Donation[]) {
+  async insertDonations(userId: UserId, donations: Omit<Donation, "donationId">[]) {
     const input = jsonb(sql, donations);
 
     const rows = await sql`
       WITH input AS (
         SELECT *
-        FROM jsonb_to_recordset(${input}::jsonb) as t (donation_id int, donation_source donation_source, author text, message text, currency currency, amount float, created_at js_date)
+        FROM jsonb_to_recordset(${input}::jsonb) as t (origin_donation_id int, origin donation_origin, author text, message text, currency currency, amount float, created_at js_date)
       )
-      INSERT INTO donation (donation_id, donation_source, user_id,   author, message, currency, amount, created_at)
-      SELECT                donation_id, donation_source, ${userId}, author, message, currency, amount, created_at
+      INSERT INTO donation (origin_donation_id, origin, user_id,   author, message, currency, amount, created_at)
+      SELECT                origin_donation_id, origin, ${userId}, author, message, currency, amount, created_at
       FROM input
-      ON CONFLICT (donation_id, donation_source) DO NOTHING
+      ON CONFLICT (origin_donation_id, origin) DO NOTHING
       RETURNING *
     `;
 

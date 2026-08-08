@@ -20,8 +20,11 @@ export const DonationSourceSchema = z.enum(["donationalerts"]);
 export type DonationSource = z.infer<typeof DonationSourceSchema>;
 
 export const DonationSchema = z.object({
-  donationId: z.number(),
-  donationSource: DonationSourceSchema,
+  donationId: z.string(),
+
+  origin: DonationSourceSchema,
+  originDonationId: z.string(),
+
   author: z.string().nullable(),
   message: z.string().nullable(),
   currency: CurrencySchema,
@@ -29,6 +32,15 @@ export const DonationSchema = z.object({
   createdAt: z.date(),
 });
 export type Donation = z.infer<typeof DonationSchema>;
+
+export const VideoSchema = z.object({
+  videoId: z.number(),
+  url: z.url(),
+  durationSeconds: z.number().int().nonnegative().nullable(),
+  isWatched: z.boolean(),
+  donation: DonationSchema,
+});
+export type Video = z.infer<typeof VideoSchema>;
 
 export const UserInfoSchema = z.object({
   userId: z.number(),

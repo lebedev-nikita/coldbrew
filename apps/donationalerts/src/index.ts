@@ -1,7 +1,7 @@
+import { delay } from "@omnistream/packages/delay.js";
 import { isInstanceof } from "@omnistream/packages/isInstanceof.js";
-import { UnauthorizedError } from "@omnistream/packages/neverthrow/fetchJson.js";
+import { UnauthorizedError } from "@omnistream/packages/neverthrow/fetch.js";
 import { AccessToken, RefreshToken, UserId } from "@omnistream/packages/schemas.js";
-import delay from "delay";
 
 import { store } from "./sensors/db/index.js";
 import { donationAlerts } from "./sensors/donationalerts.js";
@@ -21,23 +21,24 @@ async function syncUserDonations(
     }
   }
 
-  const inserted = await $donations.match(
-    (donations) => store.insertDonations(userId, donations),
-    () => "TODO: handle errors",
-  );
+  if ($donations.isErr()) {
+    // TODO: handle error
+    console.error($donations.error);
+    return;
+  }
+
+  await store.insertDonations(userId, $donations.value);
 }
 
 async function main() {
   while (true) {
+    await using _ = delay(2500);
+
     const users = await store.getUsersAuthenticatedInDonationAlerts();
 
     for (const user of users) {
       await syncUserDonations(user.userId, user.accessToken, user.refreshToken);
-
-      await delay(2500);
     }
-
-    await delay(1000);
   }
 }
 

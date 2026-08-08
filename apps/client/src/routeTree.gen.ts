@@ -14,6 +14,8 @@ import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as DonationsRouteImport } from './routes/donations'
 import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as DonationsIndexRouteImport } from './routes/donations.index'
+import { Route as DonationsVideosRouteImport } from './routes/donations.videos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,42 +42,77 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DonationsIndexRoute = DonationsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DonationsRoute,
+} as any)
+const DonationsVideosRoute = DonationsVideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => DonationsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
-  '/donations': typeof DonationsRoute
+  '/donations': typeof DonationsRouteWithChildren
   '/integrations': typeof IntegrationsRoute
   '/settings': typeof SettingsRoute
+  '/donations/videos': typeof DonationsVideosRoute
+  '/donations/': typeof DonationsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
-  '/donations': typeof DonationsRoute
   '/integrations': typeof IntegrationsRoute
   '/settings': typeof SettingsRoute
+  '/donations/videos': typeof DonationsVideosRoute
+  '/donations': typeof DonationsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
-  '/donations': typeof DonationsRoute
+  '/donations': typeof DonationsRouteWithChildren
   '/integrations': typeof IntegrationsRoute
   '/settings': typeof SettingsRoute
+  '/donations/videos': typeof DonationsVideosRoute
+  '/donations/': typeof DonationsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/alerts' | '/donations' | '/integrations' | '/settings'
+  fullPaths:
+    | '/'
+    | '/alerts'
+    | '/donations'
+    | '/integrations'
+    | '/settings'
+    | '/donations/videos'
+    | '/donations/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alerts' | '/donations' | '/integrations' | '/settings'
+  to:
+    | '/'
+    | '/alerts'
+    | '/integrations'
+    | '/settings'
+    | '/donations/videos'
+    | '/donations'
   id:
-    '__root__' | '/' | '/alerts' | '/donations' | '/integrations' | '/settings'
+    | '__root__'
+    | '/'
+    | '/alerts'
+    | '/donations'
+    | '/integrations'
+    | '/settings'
+    | '/donations/videos'
+    | '/donations/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertsRoute: typeof AlertsRoute
-  DonationsRoute: typeof DonationsRoute
+  DonationsRoute: typeof DonationsRouteWithChildren
   IntegrationsRoute: typeof IntegrationsRoute
   SettingsRoute: typeof SettingsRoute
 }
@@ -117,13 +154,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/donations/': {
+      id: '/donations/'
+      path: '/'
+      fullPath: '/donations/'
+      preLoaderRoute: typeof DonationsIndexRouteImport
+      parentRoute: typeof DonationsRoute
+    }
+    '/donations/videos': {
+      id: '/donations/videos'
+      path: '/videos'
+      fullPath: '/donations/videos'
+      preLoaderRoute: typeof DonationsVideosRouteImport
+      parentRoute: typeof DonationsRoute
+    }
   }
 }
+
+interface DonationsRouteChildren {
+  DonationsVideosRoute: typeof DonationsVideosRoute
+  DonationsIndexRoute: typeof DonationsIndexRoute
+}
+
+const DonationsRouteChildren: DonationsRouteChildren = {
+  DonationsVideosRoute: DonationsVideosRoute,
+  DonationsIndexRoute: DonationsIndexRoute,
+}
+
+const DonationsRouteWithChildren = DonationsRoute._addFileChildren(
+  DonationsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertsRoute: AlertsRoute,
-  DonationsRoute: DonationsRoute,
+  DonationsRoute: DonationsRouteWithChildren,
   IntegrationsRoute: IntegrationsRoute,
   SettingsRoute: SettingsRoute,
 }

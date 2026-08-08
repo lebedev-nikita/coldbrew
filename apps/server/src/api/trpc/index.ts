@@ -30,6 +30,10 @@ export const appRouter = router({
   donations: authenticatedProcedure.query(async ({ ctx }) => {
     return await store.listDonations(ctx.userId);
   }),
+
+  videos: authenticatedProcedure.query(async ({ ctx }) => {
+    return await store.listVideos(ctx.userId);
+  }),
 });
 
 export type AppRouter = typeof appRouter;

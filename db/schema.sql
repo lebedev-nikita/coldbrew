@@ -1,4 +1,4 @@
-CREATE TYPE donation_source AS ENUM ('donationalerts');
+CREATE TYPE donation_origin AS ENUM ('donationalerts');
 CREATE TYPE currency AS ENUM ('RUB');
 CREATE DOMAIN js_date AS timestamptz(3);
 
@@ -65,22 +65,30 @@ CREATE TABLE "user" (
 );
 
 CREATE TABLE donation (
-  donation_id     int             NOT NULL,
-  donation_source donation_source NOT NULL,
-  user_id         int             NOT NULL REFERENCES "user" (user_id),
-  author          text                NULL,
-  message         text                NULL,
-  currency        currency        NOT NULL,
-  amount          float           NOT NULL,
-  created_at      js_date         NOT NULL,
-  PRIMARY KEY (donation_id, donation_source)
+  donation_id         bigint          PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+
+  origin              donation_origin NOT NULL,
+  origin_donation_id  text            NOT NULL,
+
+  user_id             int             NOT NULL REFERENCES "user" (user_id),
+  author              text                NULL,
+  message             text                NULL,
+  currency            currency        NOT NULL,
+  amount              float           NOT NULL,
+  created_at          js_date         NOT NULL,
+  videos_parsed_at    js_date             NULL,
+  UNIQUE (origin, origin_donation_id)
 );
 
+CREATE INDEX donation_videos_unparsed_idx ON donation (created_at)
+WHERE videos_parsed_at IS NULL;
+
+
 CREATE TABLE video (
-  video_id        serial          PRIMARY KEY,
-  donation_id     int             NOT NULL,
-  donation_source donation_source NOT NULL,
-  url             text            NOT NULL,
-  is_watched      bool            NOT NULL DEFAULT false,
-  FOREIGN KEY (donation_id, donation_source) REFERENCES donation (donation_id, donation_source)
+  video_id          serial  PRIMARY KEY,
+  donation_id       int     NOT NULL REFERENCES donation (donation_id),
+  url               text    NOT NULL,
+  duration_seconds  int         NULL,
+  is_watched        bool    NOT NULL DEFAULT false,
+  UNIQUE (donation_id, url)
 );

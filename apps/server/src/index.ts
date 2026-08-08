@@ -6,7 +6,7 @@ import { apiRouter } from "./api/index.js";
 import { env } from "./env.js";
 import { auth } from "./lib/auth.js";
 
-export async function main() {
+async function main() {
   const port = env.PORT;
   const app = new Hono();
 

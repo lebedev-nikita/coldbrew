@@ -10,6 +10,8 @@ import {
   UserId,
   UserIdSchema,
   UserInfoSchema,
+  Video,
+  VideoSchema,
 } from "@omnistream/packages/schemas.js";
 import postgres, { Sql } from "postgres";
 import { z } from "zod";
@@ -28,12 +30,12 @@ export class Store {
     const rows = await this.sql`
       WITH input AS (
         SELECT *
-        FROM jsonb_to_recordset(${input}::jsonb) as t (donation_id int, donation_source donation_source, author text, message text, currency currency, amount float, created_at js_date)
+        FROM jsonb_to_recordset(${input}::jsonb) as t (donation_id int, donation_origin donation_origin, author text, message text, currency currency, amount float, created_at js_date)
       )
-      INSERT INTO donation (donation_id, donation_source, user_id,   author, message, currency, amount, created_at)
-      SELECT                donation_id, donation_source, ${userId}, author, message, currency, amount, created_at
+      INSERT INTO donation (donation_id, donation_origin, user_id,   author, message, currency, amount, created_at)
+      SELECT                donation_id, donation_origin, ${userId}, author, message, currency, amount, created_at
       FROM input
-      ON CONFLICT (donation_id, donation_source) DO NOTHING
+      ON CONFLICT (donation_id, donation_origin) DO NOTHING
       RETURNING *
     `;
 
@@ -48,6 +50,30 @@ export class Store {
     `;
 
     return z.array(DonationSchema).parse(rows);
+  }
+
+  async listVideos(userId: UserId): Promise<Video[]> {
+    const rows = await this.sql`
+      SELECT video.video_id, video.url, video.duration_seconds, video.is_watched, donation.*
+      FROM video
+      JOIN donation USING (donation_id)
+      WHERE donation.user_id = ${userId}
+      ORDER BY video.is_watched ASC, donation.created_at DESC, video.video_id DESC
+    `;
+
+    const VideoRowSchema = DonationSchema.extend({
+      videoId: z.number(),
+      url: z.url(),
+      durationSeconds: z.number().int().nonnegative().nullable(),
+      isWatched: z.boolean(),
+    });
+
+    return z
+      .array(VideoRowSchema)
+      .parse(rows)
+      .map(({ videoId, url, durationSeconds, isWatched, ...donation }) =>
+        VideoSchema.parse({ videoId, url, durationSeconds, isWatched, donation }),
+      );
   }
 
   async getOrCreateUserId(authUserId: AuthUserId) {

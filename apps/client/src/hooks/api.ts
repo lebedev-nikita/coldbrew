@@ -10,6 +10,10 @@ export function useDonationsQ() {
   return useQuery(trpc.donations.queryOptions());
 }
 
+export function useVideosQ() {
+  return useQuery(trpc.videos.queryOptions());
+}
+
 export function useAuthUrl() {
   return useSuspenseQuery(trpc.authUrls.queryOptions()).data;
 }

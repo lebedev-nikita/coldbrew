@@ -6,30 +6,36 @@ install:
   pnpm install
 
 dev-server:
-  cd apps/server         && pnpm exec dotenvx run -f ../../.env -- pnpm exec tsx --watch src/index.ts
+  pnpm exec dotenvx run -- pnpm exec tsx --watch apps/server/src/index.ts
 
 dev-donationalerts:
-  cd apps/donationalerts && pnpm exec dotenvx run -f ../../.env -- pnpm exec tsx --watch src/index.ts
+  pnpm exec dotenvx run -- pnpm exec tsx --watch apps/donationalerts/src/index.ts
+
+dev-video:
+  pnpm exec dotenvx run -- pnpm exec tsx --watch apps/video/src/index.ts
 
 dev-client:
   cd apps/client && pnpm exec vite
 
 dev:
-  pnpm exec concurrently -n 'client,server,donationalerts' 'just dev-client' 'just dev-server' 'just dev-donationalerts'
+  pnpm exec concurrently -n 'client,server,donationalerts,video' 'just dev-client' 'just dev-server' 'just dev-donationalerts' 'just dev-video'
 
 typecheck-client:
-  cd apps/client && pnpm exec tsc --noEmit
+  pnpm exec tsc --noEmit -p apps/client/tsconfig.json
 
 typecheck-server:
-  cd apps/server && pnpm exec tsc --noEmit
+  pnpm exec tsc --noEmit -p apps/server/tsconfig.json
 
 typecheck-donationalerts:
-  cd apps/donationalerts && pnpm exec tsc --noEmit
+  pnpm exec tsc --noEmit -p apps/donationalerts/tsconfig.json
+
+typecheck-video:
+  pnpm exec tsc --noEmit -p apps/video/tsconfig.json
 
 typecheck-packages:
-  cd packages && pnpm exec tsc --noEmit
+  pnpm exec tsc --noEmit -p packages/tsconfig.json
 
-typecheck: typecheck-client typecheck-server typecheck-donationalerts typecheck-packages
+typecheck: typecheck-client typecheck-server typecheck-donationalerts typecheck-video typecheck-packages
 
 
 fmt:
@@ -46,24 +52,24 @@ test-client: install
   cd apps/client && pnpm exec vitest --run --passWithNoTests
 
 test-server: install
-  cd apps/server && pnpm exec vitest --run --passWithNoTests
+  pnpm exec dotenvx run -- pnpm exec vitest --run --passWithNoTests apps/server
 
 test-donationalerts: install
-  cd apps/donationalerts && pnpm exec vitest --run --passWithNoTests
+  pnpm exec dotenvx run -- pnpm exec vitest --run --passWithNoTests apps/donationalerts
+
+test-video: install
+  pnpm exec dotenvx run -- pnpm exec vitest --run --passWithNoTests apps/video
 
 test-packages: install
-  cd packages && pnpm exec vitest --run --passWithNoTests
+  pnpm exec dotenvx run -- pnpm exec vitest --run --passWithNoTests packages
 
-test: test-server test-donationalerts test-packages test-client
+test: test-server test-donationalerts test-video test-packages test-client
 
 lint: test fmt-check
 
 
 schema-apply:
   pgschema apply --file db/schema.sql
-
-auth-migrate:
-  pnpm exec dotenvx run -f .env -- npx @better-auth/cli@latest migrate --config apps/server/src/lib/auth.ts
 
 count-lines path=".":
   find "{{path}}" -type d -name "node_modules" -prune -o -type f \( -name "*.ts" -o -name "*.tsx" \) -print0 | xargs -0 wc -l

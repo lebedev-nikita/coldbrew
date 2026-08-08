@@ -1,5 +1,7 @@
 import { Metric } from "@client/components/dashboard/metric";
+import DonationCard from "@client/components/donation-card";
 import MockChart from "@client/components/mock-chart";
+import { fmtCurrency, fmtDate } from "@client/lib/fmt";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight, Copy, Share2, Sparkles, Wallet } from "lucide-react";
 import { z } from "zod";
@@ -11,19 +13,7 @@ export const Route = createFileRoute("/")({
   validateSearch: z.object({ success: z.boolean().optional() }),
 });
 
-const rubles = new Intl.NumberFormat("ru-RU", {
-  style: "currency",
-  currency: "RUB",
-  maximumFractionDigits: 0,
-});
-
 const panel = "rounded-xl border border-[#eae8ef] bg-white";
-
-const fmtDate = (d: Date) => {
-  const { round } = Math;
-  const intl = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-  return intl.format(round((d.getTime() - Date.now()) / 3_600_000), "hour");
-};
 
 function Overview() {
   const userInfo = useUserInfo();
@@ -32,18 +22,8 @@ function Overview() {
   const success = Route.useSearch({ select: (search) => search.success });
   const donationAlertsConnected = userInfo !== null && userInfo.hasDonationalertsAccessToken;
 
-  const donations =
-    donationsQ.data?.map((donation) => ({
-      author: donation.author ?? "Anonymous",
-      amount: donation.amount,
-      message: donation.message ?? "Sent a donation",
-      time: fmtDate(donation.createdAt),
-      get initials() {
-        return (this.author ?? "A").slice(0, 2).toUpperCase();
-      },
-      tone: "bg-violet-100 text-violet-700",
-    })) ?? [];
-  const total = donations.reduce((sum, donation) => sum + donation.amount, 0);
+  const total = donationsQ.data?.reduce((sum, donation) => sum + donation.amount, 0) ?? 0;
+  const donationsLength = donationsQ.data?.length ?? 0;
 
   return (
     <section className="flex min-w-0 flex-1 flex-col" id="top">
@@ -76,7 +56,7 @@ function Overview() {
         <section className="mt-7 grid gap-4 sm:mt-9 md:grid-cols-3" aria-label="Stream statistics">
           <Metric
             title="Total received"
-            value={rubles.format(total || 24850)}
+            value={fmtCurrency("RUB", total)}
             note="↗ 18.2%"
             subnote="vs. previous period"
             icon={Wallet}
@@ -84,7 +64,7 @@ function Overview() {
           />
           <Metric
             title="Donations"
-            value={String(donations.length || 42)}
+            value={String(donationsLength)}
             note="↗ 12.5%"
             subnote="vs. previous period"
             icon={Sparkles}
@@ -92,7 +72,7 @@ function Overview() {
           />
           <Metric
             title="Average donation"
-            value={rubles.format(Math.round((total || 24850) / (donations.length || 42)))}
+            value={fmtCurrency("RUB", Math.round((total || 24850) / donationsLength))}
             note="Across all connected platforms"
             icon={Share2}
             iconClass="bg-sky-50 text-sky-500"
@@ -110,32 +90,12 @@ function Overview() {
               </Link>
             </div>
             <div>
-              {donations.slice(0, 3).map((donation, index) => (
-                <div
-                  className="flex items-center gap-3 border-t border-[#f0eff3] px-5 py-3.5"
+              {donationsQ.data?.slice(0, 3).map((donation, index) => (
+                <DonationCard
                   key={`${donation.author}-${index}`}
-                >
-                  <div
-                    className={`grid size-8 shrink-0 place-items-center rounded-lg text-[10px] font-bold ${donation.tone}`}
-                  >
-                    {donation.initials}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <strong className="text-xs text-[#48445b]">{donation.author}</strong>
-                      <span className="rounded bg-[#f0edf7] px-1.5 py-0.5 text-[9px] font-semibold text-[#918ca2]">
-                        DonationAlerts
-                      </span>
-                    </div>
-                    <p className="mt-1 truncate text-[11px] text-[#8e8b9b]">{donation.message}</p>
-                  </div>
-                  <div className="ml-auto text-right">
-                    <strong className="block text-xs text-[#48445b]">
-                      +{rubles.format(donation.amount)}
-                    </strong>
-                    <span className="text-[10px] text-[#aaa7b4]">{donation.time}</span>
-                  </div>
-                </div>
+                  className="border-t border-[#f0eff3]"
+                  donation={donation}
+                />
               ))}
             </div>
           </article>

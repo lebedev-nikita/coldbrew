@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { z } from "zod";
 
-import { fetchJson } from "./neverthrow/fetchJson.js";
+import { fetchJson } from "./neverthrow/fetch.js";
 import { validate } from "./neverthrow/validate.js";
 import {
   AccessToken,
@@ -57,9 +57,9 @@ export class DonationAlerts {
       .andThen((data) => validate(schema, data).map((v) => v.data))
       .map((parsed) =>
         parsed.map(
-          (donation): Donation => ({
-            donationId: donation.id,
-            donationSource: "donationalerts",
+          (donation): Omit<Donation, "donationId"> => ({
+            origin: "donationalerts",
+            originDonationId: String(donation.id),
             amount: donation.amount,
             author: donation.username,
             currency: donation.currency,

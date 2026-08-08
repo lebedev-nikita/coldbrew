@@ -27,14 +27,16 @@ function getText(response: Response) {
   return ResultAsync.fromPromise(response.text(), (e) => new NetworkError(e));
 }
 
+export function fetchText(input: RequestInfo | URL, init?: RequestInit) {
+  return ResultAsync.fromPromise(fetch(input, init), (e) => new NetworkError(e)).andThen((res) =>
+    getText(res).andThen((text) => {
+      if (res.status == 401) return err(new UnauthorizedError({ message: text }));
+      if (!res.ok) return err(new HttpError({ status: res.status, statusText: res.statusText }));
+      return ok(text);
+    }),
+  );
+}
+
 export function fetchJson(input: RequestInfo | URL, init?: RequestInit) {
-  return ResultAsync.fromPromise(fetch(input, init), (e) => new NetworkError(e))
-    .andThen((res) =>
-      getText(res).andThen((text) => {
-        if (res.status == 401) return err(new UnauthorizedError({ message: text }));
-        if (!res.ok) return err(new HttpError({ status: res.status, statusText: res.statusText }));
-        return ok(text);
-      }),
-    )
-    .andThen((text) => parseJson(text));
+  return fetchText(input, init).andThen((text) => parseJson(text));
 }
