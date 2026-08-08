@@ -62,5 +62,8 @@ lint: test fmt-check
 schema-apply:
   pgschema apply --file db/schema.sql
 
+auth-migrate:
+  pnpm exec dotenvx run -f .env -- npx @better-auth/cli@latest migrate --config apps/server/src/lib/auth.ts
+
 count-lines path=".":
   find "{{path}}" -type d -name "node_modules" -prune -o -type f \( -name "*.ts" -o -name "*.tsx" \) -print0 | xargs -0 wc -l

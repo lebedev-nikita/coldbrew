@@ -9,7 +9,7 @@ export const integrationRouter = new Hono().get("/donationalerts/callback", asyn
   const authCode = c.req.query("code");
   if (!authCode) return c.text("no auth code", 400);
 
-  const userId = getUserId(c.req.raw);
+  const userId = await getUserId(c.req.raw);
   if (!userId) return c.text("Unauthorized", 401);
 
   const appUrl = readonlyUrl("http://localhost:5173/integrations");

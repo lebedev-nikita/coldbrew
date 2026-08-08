@@ -7,6 +7,9 @@ import superjson from "superjson";
 const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
+      fetch(url, options) {
+        return fetch(url, { ...options, credentials: "include" });
+      },
       url: "http://localhost:3000/api/trpc",
       transformer: superjson,
     }),

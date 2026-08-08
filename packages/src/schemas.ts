@@ -7,6 +7,9 @@ export type Currency = z.infer<typeof CurrencySchema>;
 export const UserIdSchema = z.number().brand("user id");
 export type UserId = z.infer<typeof UserIdSchema>;
 
+export const AuthUserIdSchema = z.string().brand("auth user id");
+export type AuthUserId = z.infer<typeof AuthUserIdSchema>;
+
 export const RefreshTokenSchema = z.string().brand("refresh token");
 export type RefreshToken = z.infer<typeof RefreshTokenSchema>;
 

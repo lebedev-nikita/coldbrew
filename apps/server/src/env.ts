@@ -6,6 +6,11 @@ export const env = getEnv({
   PORT: z.coerce.number().default(3000),
   CLIENT_ORIGIN: z.string().nonempty().default("http://localhost:5173"),
 
+  AUTH_BASE_URL: z.url(),
+  BETTER_AUTH_SECRET: z.string().min(32),
+  GOOGLE_CLIENT_ID: z.string().nonempty(),
+  GOOGLE_CLIENT_SECRET: z.string().nonempty(),
+
   DONATION_ALERTS_CLIENT_ID: z.string().refine((str) => str.length > 0 && !isNaN(+str)),
   DONATION_ALERTS_CLIENT_SECRET: z.string().nonempty(),
 });

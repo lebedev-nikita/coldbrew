@@ -9,30 +9,22 @@ import { integrationRouter } from "./integration.js";
 export const appRouter = router({
   integration: integrationRouter,
 
-  authUrls: procedure.query(() => {
-    const REDIRECT_URI = "http://localhost:3000/api/integration/donationalerts/callback";
-
-    const donationAlerts = readonlyUrl(
-      "https://www.donationalerts.com/oauth/authorize",
-    ).withSearchParams({
-      "client_id": env.DONATION_ALERTS_CLIENT_ID,
-      "redirect_uri": REDIRECT_URI,
-      "response_type": "code",
-      "scope": DONATION_ALERTS_SCOPES,
-    }).href;
+  authUrls: authenticatedProcedure.query(() => {
+    const donationAlerts = readonlyUrl("https://www.donationalerts.com/oauth/authorize")
+      .withSearchParam("client_id", env.DONATION_ALERTS_CLIENT_ID)
+      .withSearchParam(
+        "redirect_uri",
+        "http://localhost:3000/api/integration/donationalerts/callback",
+      )
+      .withSearchParam("response_type", "code")
+      .withSearchParam("scope", DONATION_ALERTS_SCOPES)
+      .toString();
 
     return { donationAlerts };
   }),
 
-  userInfo: procedure.query(async ({ ctx }) => {
-    if (!ctx.userId) return null;
-
-    const user = await store.getUserInfo(ctx.userId);
-    if (user) return user;
-
-    // TODO: better auth
-    const createdUser = await store.createUser(ctx.userId);
-    return createdUser;
+  userInfo: authenticatedProcedure.query(async ({ ctx }) => {
+    return await store.getUserInfo(ctx.userId);
   }),
 
   donations: authenticatedProcedure.query(async ({ ctx }) => {

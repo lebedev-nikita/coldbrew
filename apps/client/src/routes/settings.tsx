@@ -5,5 +5,5 @@ export const Route = createFileRoute("/settings")({
 });
 
 function Settings() {
-  return null;
+  return <main>hello "/settings!"</main>;
 }

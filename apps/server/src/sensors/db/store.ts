@@ -2,6 +2,7 @@ import { jsonb } from "@omnistream/packages/jsonb.js";
 import {
   AccessToken,
   AccessTokenSchema,
+  AuthUserId,
   Donation,
   DonationSchema,
   RefreshToken,
@@ -14,11 +15,12 @@ import postgres, { Sql } from "postgres";
 import { z } from "zod";
 
 export class Store {
-  private sql: Sql;
-
-  constructor(dbUrl: string) {
-    this.sql = postgres(dbUrl, { transform: postgres.camel });
+  static fromDbUrl(dbUrl: string) {
+    const sql = postgres(dbUrl, { transform: postgres.camel });
+    return new Store(sql);
   }
+
+  constructor(private readonly sql: Sql) {}
 
   async insertDonations(userId: UserId, donations: Donation[]) {
     const input = jsonb(this.sql, donations);
@@ -48,17 +50,16 @@ export class Store {
     return z.array(DonationSchema).parse(rows);
   }
 
-  async createUser(userId: UserId) {
+  async getOrCreateUserId(authUserId: AuthUserId) {
     const rows = await this.sql`
-      INSERT INTO "user" ( user_id )
-      VALUES             (${userId})
-      RETURNING
-        user_id,
-        donationalerts_refresh_token IS NOT NULL  AS has_donationalerts_refresh_token,
-        donationalerts_access_token  IS NOT NULL  AS has_donationalerts_access_token
+      INSERT INTO "user" (auth_user_id)
+      VALUES             (${authUserId})
+      ON CONFLICT (auth_user_id) DO UPDATE
+      SET auth_user_id = EXCLUDED.auth_user_id
+      RETURNING user_id
     `;
 
-    return UserInfoSchema.parse(rows[0]);
+    return UserIdSchema.parse(rows[0]?.userId);
   }
 
   async getUsersAuthenticatedInDonationAlerts() {
@@ -79,6 +80,7 @@ export class Store {
 
     return z.array(schema).parse(rows);
   }
+
   async getUserInfo(userId: UserId) {
     const rows = await this.sql`
       SELECT  user_id,
@@ -104,6 +106,7 @@ export class Store {
     const rows = await this.sql`
       SELECT donationalerts_access_token
       FROM "user"
+      WHERE user_id = ${userId}
     `;
 
     const schema = z.object({

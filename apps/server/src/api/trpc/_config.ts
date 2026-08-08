@@ -4,11 +4,11 @@ import SuperJSON from "superjson";
 
 import { getUserId } from "../_util.js";
 
-export const createContext = (opt: FetchCreateContextFnOptions) => ({
-  userId: getUserId(opt.req),
+export const createContext = async (opt: FetchCreateContextFnOptions) => ({
+  userId: await getUserId(opt.req),
 });
 
-export type Context = ReturnType<typeof createContext>;
+export type Context = Awaited<ReturnType<typeof createContext>>;
 
 const t = initTRPC.context<Context>().create({
   transformer: SuperJSON,

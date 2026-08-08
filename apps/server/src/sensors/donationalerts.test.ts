@@ -21,7 +21,7 @@ describe("DonationAlerts", { tags: ["integration"] }, () => {
       clientId: env.DONATION_ALERTS_CLIENT_ID,
       clientSecret: env.DONATION_ALERTS_CLIENT_SECRET,
     });
-    store = new Store(env.DATABASE_URL);
+    store = Store.fromDbUrl(env.DATABASE_URL);
   });
 
   describe("issueAccessToken", () => {

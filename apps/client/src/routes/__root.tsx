@@ -1,8 +1,10 @@
 import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
-import { Bell, Ellipsis, LayoutDashboard, Moon, Plug, Settings, Sun, Wallet } from "lucide-react";
+import { Bell, LayoutDashboard, LogOut, Moon, Plug, Settings, Sun, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import logo from "../../assets/logo.svg";
+import { Button } from "../components/ui/button";
+import { signIn, signOut, useSession } from "../lib/auth-client";
 
 const navItem =
   "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-[#77758b] transition hover:bg-violet-50 hover:text-violet-700";
@@ -12,13 +14,36 @@ export const Route = createRootRoute({
   component: Root,
 });
 
+import { useLocalStorage } from "@siberiacancode/reactuse";
+
+function useDark() {
+  const theme = useLocalStorage<"light" | "dark">("theme", "light");
+  const isDark = theme.value == "dark";
+  const toggleDark = () => theme.set(theme.value == "dark" ? "light" : "dark");
+  return { isDark, toggleDark };
+}
+
 function Root() {
-  const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
+  const session = useSession();
+  const { isDark, toggleDark } = useDark();
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark);
-    localStorage.setItem("theme", isDark ? "dark" : "light");
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   }, [isDark]);
+
+  if (session.isPending) {
+    return <main className="grid min-h-screen place-items-center bg-[#f7f7fb]" />;
+  }
+
+  if (!session.data) {
+    return <SignIn />;
+  }
+
+  const user = session.data.user;
 
   return (
     <main className="flex h-screen min-w-80 bg-[#f7f7fb] font-sans text-[#242238] transition-colors duration-300 dark:bg-[#11111a] dark:text-[#f1efff]">
@@ -62,7 +87,7 @@ function Root() {
             aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             aria-pressed={isDark}
             className="flex w-full items-center justify-between rounded-xl border border-[#e8e6ef] bg-[#faf9fc] p-1 text-xs font-semibold text-[#6d697d] shadow-sm transition hover:border-violet-200 hover:text-violet-700 dark:border-white/10 dark:bg-white/5 dark:text-violet-100 dark:hover:border-violet-400/40 dark:hover:bg-violet-400/10"
-            onClick={() => setIsDark((value) => !value)}
+            onClick={() => toggleDark()}
             type="button"
           >
             <span className="flex items-center gap-2 px-2">
@@ -87,15 +112,26 @@ function Root() {
             Settings
           </Link>
           <div className="flex items-center gap-2.5 border-t border-[#eeedf2] px-2 pt-5 dark:border-white/10">
-            <div className="grid size-8 place-items-center rounded-lg bg-linear-to-br from-orange-300 to-orange-500 text-[11px] font-bold text-white">
-              NL
+            {user.image ? (
+              <img alt="" className="size-8 rounded-lg object-cover" src={user.image} />
+            ) : (
+              <div className="grid size-8 place-items-center rounded-lg bg-linear-to-br from-orange-300 to-orange-500 text-[11px] font-bold text-white">
+                {user.name.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0 grow">
+              <strong className="block truncate text-xs text-[#373449]">{user.name}</strong>
+              <small className="mt-0.5 block truncate text-[10px] text-[#9391a1]">
+                {user.email}
+              </small>
             </div>
-            <div>
-              <strong className="block text-xs text-[#373449]">nikita_live</strong>
-              <small className="mt-0.5 block text-[10px] text-[#9391a1]">Professional plan</small>
-            </div>
-            <button className="ml-auto text-[#9694a3]" aria-label="Open account menu">
-              <Ellipsis aria-hidden="true" />
+            <button
+              aria-label="Sign out"
+              className="text-[#9694a3] hover:text-violet-700"
+              onClick={() => signOut()}
+              type="button"
+            >
+              <LogOut aria-hidden="true" size={18} />
             </button>
           </div>
         </div>
@@ -103,6 +139,37 @@ function Root() {
       <div className="grow overflow-y-auto">
         <Outlet />
       </div>
+    </main>
+  );
+}
+
+function SignIn() {
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  return (
+    <main className="grid min-h-screen place-items-center bg-[#f7f7fb] p-6 text-[#242238]">
+      <section className="flex w-full max-w-sm flex-col gap-6 rounded-2xl border border-[#ebeaf1] bg-white p-8 shadow-xl shadow-violet-950/5">
+        <div className="flex items-center gap-2.5 text-xl font-bold tracking-tight text-[#292640]">
+          <img alt="" className="h-6" src={logo} />
+          omnistream
+        </div>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
+          <p className="text-sm text-[#77758b]">Sign in to manage your stream in one place.</p>
+        </div>
+        <Button
+          className="w-full"
+          disabled={isSigningIn}
+          onClick={async () => {
+            setIsSigningIn(true);
+            const callbackURL = window.location.origin;
+            await signIn.social({ provider: "google", callbackURL });
+          }}
+          size="lg"
+        >
+          {isSigningIn ? "Redirecting…" : "Continue with Google"}
+        </Button>
+      </section>
     </main>
   );
 }
