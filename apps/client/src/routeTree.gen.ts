@@ -16,6 +16,7 @@ import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as DonationsIndexRouteImport } from './routes/donations.index'
 import { Route as DonationsVideosRouteImport } from './routes/donations.videos'
+import { Route as ShareSlugRouteImport } from './routes/share.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,11 @@ const DonationsVideosRoute = DonationsVideosRouteImport.update({
   path: '/videos',
   getParentRoute: () => DonationsRoute,
 } as any)
+const ShareSlugRoute = ShareSlugRouteImport.update({
+  id: '/share/$slug',
+  path: '/share/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/integrations': typeof IntegrationsRoute
   '/settings': typeof SettingsRoute
   '/donations/videos': typeof DonationsVideosRoute
+  '/share/$slug': typeof ShareSlugRoute
   '/donations/': typeof DonationsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/integrations': typeof IntegrationsRoute
   '/settings': typeof SettingsRoute
   '/donations/videos': typeof DonationsVideosRoute
+  '/share/$slug': typeof ShareSlugRoute
   '/donations': typeof DonationsIndexRoute
 }
 export interface FileRoutesById {
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/integrations': typeof IntegrationsRoute
   '/settings': typeof SettingsRoute
   '/donations/videos': typeof DonationsVideosRoute
+  '/share/$slug': typeof ShareSlugRoute
   '/donations/': typeof DonationsIndexRoute
 }
 export interface FileRouteTypes {
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/settings'
     | '/donations/videos'
+    | '/share/$slug'
     | '/donations/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/settings'
     | '/donations/videos'
+    | '/share/$slug'
     | '/donations'
   id:
     | '__root__'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/settings'
     | '/donations/videos'
+    | '/share/$slug'
     | '/donations/'
   fileRoutesById: FileRoutesById
 }
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   DonationsRoute: typeof DonationsRouteWithChildren
   IntegrationsRoute: typeof IntegrationsRoute
   SettingsRoute: typeof SettingsRoute
+  ShareSlugRoute: typeof ShareSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DonationsVideosRouteImport
       parentRoute: typeof DonationsRoute
     }
+    '/share/$slug': {
+      id: '/share/$slug'
+      path: '/share/$slug'
+      fullPath: '/share/$slug'
+      preLoaderRoute: typeof ShareSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -191,6 +211,7 @@ const rootRouteChildren: RootRouteChildren = {
   DonationsRoute: DonationsRouteWithChildren,
   IntegrationsRoute: IntegrationsRoute,
   SettingsRoute: SettingsRoute,
+  ShareSlugRoute: ShareSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

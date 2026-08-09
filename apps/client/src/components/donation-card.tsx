@@ -35,11 +35,16 @@ export default function DonationCard({ donation, ...props }: Props) {
           </span>
         </div>
         <p className="mt-1 truncate text-xs text-[#8e8b9b]">
-          {messageChunks.map((chunk) =>
+          {messageChunks.map((chunk, index) =>
             chunk.type == "string" ? (
-              <span>{chunk.value}</span>
+              <span key={index}>{chunk.value}</span>
             ) : (
-              <a href={chunk.href} target="_blank" className="font-bold hover:underline">
+              <a
+                key={index}
+                href={chunk.href}
+                target="_blank"
+                className="font-bold hover:underline"
+              >
                 {chunk.text}
               </a>
             ),

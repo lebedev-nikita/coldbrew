@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto";
+
 import { z } from "zod";
 
 // TODO: support other currencies
@@ -6,6 +8,12 @@ export type Currency = z.infer<typeof CurrencySchema>;
 
 export const UserIdSchema = z.number().brand("user id");
 export type UserId = z.infer<typeof UserIdSchema>;
+
+export const SlugSchema = z
+  .string()
+  .regex(/^@[a-zA-Z0-9\-]{3,47}$/)
+  .brand("slug");
+export type Slug = z.infer<typeof SlugSchema>;
 
 export const AuthUserIdSchema = z.string().brand("auth user id");
 export type AuthUserId = z.infer<typeof AuthUserIdSchema>;
@@ -44,6 +52,7 @@ export type Video = z.infer<typeof VideoSchema>;
 
 export const UserInfoSchema = z.object({
   userId: z.number(),
+  slug: SlugSchema,
 
   hasDonationalertsRefreshToken: z.boolean(),
   hasDonationalertsAccessToken: z.boolean(),

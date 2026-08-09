@@ -4,7 +4,8 @@
   "printWidth": 100,
   "quoteProps": "preserve",
   "sortTailwindcss": {
-    "stylesheet": "apps/client/styles.css"
+    "stylesheet": "apps/client/styles.css",
+    "functions": ["clsx", "cn", "cva", "tw"]
   },
   "ignorePatterns": ["*.gen.*", "*.yaml"],
   "sortImports": true

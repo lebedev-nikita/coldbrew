@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { jsonb } from "@omnistream/packages/jsonb.js";
 import {
   AccessToken,
@@ -7,6 +9,8 @@ import {
   DonationSchema,
   RefreshToken,
   RefreshTokenSchema,
+  Slug,
+  SlugSchema,
   UserId,
   UserIdSchema,
   UserInfoSchema,
@@ -76,16 +80,102 @@ export class Store {
       );
   }
 
-  async getOrCreateUserId(authUserId: AuthUserId) {
+  async setSlug(userId: UserId, slug: string) {
     const rows = await this.sql`
-      INSERT INTO "user" (auth_user_id)
-      VALUES             (${authUserId})
-      ON CONFLICT (auth_user_id) DO UPDATE
-      SET auth_user_id = EXCLUDED.auth_user_id
+      UPDATE "user"
+      SET slug = ${slug}
+      WHERE user_id = ${userId}
+        AND NOT EXISTS (
+          SELECT 1
+          FROM "user" AS other_user
+          WHERE other_user.slug = ${slug}
+            AND other_user.user_id <> ${userId}
+        )
+      RETURNING slug
+    `;
+
+    return rows.length > 0;
+  }
+
+  async listSharedVideos(slug: string): Promise<Video[] | null> {
+    const users = await this.sql`
+      SELECT 1
+      FROM "user"
+      WHERE slug = ${slug}
+    `;
+
+    if (users.length === 0) {
+      return null;
+    }
+
+    const rows = await this.sql`
+      SELECT video.video_id, video.url, video.duration_seconds, video.is_watched, donation.*
+      FROM video
+      JOIN donation USING (donation_id)
+      JOIN "user" ON "user".user_id = donation.user_id
+      WHERE "user".slug = ${slug}
+      ORDER BY video.is_watched ASC, donation.created_at DESC, video.video_id DESC
+    `;
+
+    const VideoRowSchema = DonationSchema.extend({
+      videoId: z.number(),
+      url: z.url(),
+      durationSeconds: z.number().int().nonnegative().nullable(),
+      isWatched: z.boolean(),
+    });
+
+    return z
+      .array(VideoRowSchema)
+      .parse(rows)
+      .map(({ videoId, url, durationSeconds, isWatched, ...donation }) =>
+        VideoSchema.parse({ videoId, url, durationSeconds, isWatched, donation }),
+      );
+  }
+
+  private async slugExists(slug: string) {
+    const rows = await this.sql`
+      SELECT 1 FROM "user" WHERE slug = ${slug}
+    `;
+    return rows.length > 0;
+  }
+
+  private async getUserId(authUserId: AuthUserId) {
+    const rows = await this.sql`
+      SELECT user_id
+      FROM "user"
+      WHERE auth_user_id = ${authUserId}
+    `;
+
+    const schema = z.object({
+      userId: UserIdSchema,
+    });
+
+    return schema.optional().parse(rows[0])?.userId ?? null;
+  }
+
+  private async createUser(authUserId: AuthUserId, slug: string) {
+    const rows = await this.sql`
+      INSERT INTO "user" (auth_user_id,  slug   )
+      VALUES             (${authUserId}, ${slug})
       RETURNING user_id
     `;
 
-    return UserIdSchema.parse(rows[0]?.userId);
+    const schema = z.object({
+      userId: UserIdSchema,
+    });
+
+    return schema.parse(rows[0]).userId;
+  }
+
+  async getOrCreateUserId(authUserId: AuthUserId, slug: string) {
+    const userId = await this.getUserId(authUserId);
+    if (userId) return userId;
+
+    if (await this.slugExists(slug)) {
+      slug = `@${randomUUID()}`;
+    }
+
+    return await this.createUser(authUserId, slug);
   }
 
   async getUsersAuthenticatedInDonationAlerts() {
@@ -109,7 +199,7 @@ export class Store {
 
   async getUserInfo(userId: UserId) {
     const rows = await this.sql`
-      SELECT  user_id,
+      SELECT  user_id, slug,
               donationalerts_refresh_token IS NOT NULL  AS has_donationalerts_refresh_token,
               donationalerts_access_token  IS NOT NULL  AS has_donationalerts_access_token
       FROM "user"

@@ -1,5 +1,8 @@
 import { readonlyUrl } from "@lebedevna/readonly-url";
 import { DONATION_ALERTS_SCOPES } from "@omnistream/packages/donationalerts.js";
+import { SlugSchema, UserIdSchema } from "@omnistream/packages/schemas.js";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 
 import { env } from "../../env.js";
 import { store } from "../../sensors/db/index.js";
@@ -23,7 +26,8 @@ export const appRouter = router({
     return { donationAlerts };
   }),
 
-  userInfo: authenticatedProcedure.query(async ({ ctx }) => {
+  userInfo: procedure.query(async ({ ctx }) => {
+    if (ctx.userId === null) return null;
     return await store.getUserInfo(ctx.userId);
   }),
 
@@ -34,6 +38,35 @@ export const appRouter = router({
   videos: authenticatedProcedure.query(async ({ ctx }) => {
     return await store.listVideos(ctx.userId);
   }),
+
+  sharedVideos: procedure
+    .input(
+      z.object({
+        slug: SlugSchema,
+      }),
+    )
+    .query(async ({ input }) => {
+      return await store.listSharedVideos(input.slug);
+    }),
+
+  updateSlug: authenticatedProcedure
+    .input(
+      z.object({
+        slug: SlugSchema,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const wasUpdated = await store.setSlug(ctx.userId, input.slug);
+
+      if (!wasUpdated) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "This slug is already in use.",
+        });
+      }
+
+      return { slug: input.slug };
+    }),
 });
 
 export type AppRouter = typeof appRouter;

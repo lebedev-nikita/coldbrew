@@ -35,7 +35,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^4.1.10
-        version: 4.1.10(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)
+        version: 4.1.10(@types/node@24.13.3)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
 
   apps/client:
     dependencies:
@@ -48,6 +48,12 @@ importers:
       '@lebedevna/match':
         specifier: ^0.2.0
         version: 0.2.0
+      '@lebedevna/use-helpers':
+        specifier: ^0.0.1
+        version: 0.0.1(react@19.2.8)
+      '@omnistream/packages':
+        specifier: workspace:*
+        version: link:../../packages
       '@omnistream/server':
         specifier: workspace:*
         version: link:../server
@@ -71,7 +77,7 @@ importers:
         version: 11.18.0(@tanstack/react-query@5.101.4(react@19.2.8))(@trpc/client@11.18.0(@trpc/server@11.18.0(typescript@7.0.2))(typescript@7.0.2))(@trpc/server@11.18.0(typescript@7.0.2))(react@19.2.8)(typescript@7.0.2)
       better-auth:
         specifier: ^1.6.26
-        version: 1.6.26(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.10(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
+        version: 1.6.26(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.10(@types/node@24.13.3)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)))
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -90,6 +96,9 @@ importers:
       react-dom:
         specifier: ^19.1.1
         version: 19.2.8(react@19.2.8)
+      react-hook-form:
+        specifier: ^7.85.0
+        version: 7.85.0(react@19.2.8)
       superjson:
         specifier: ^2.2.2
         version: 2.2.6
@@ -166,7 +175,7 @@ importers:
         version: 11.18.0(typescript@7.0.2)
       better-auth:
         specifier: ^1.6.26
-        version: 1.6.26(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.10(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
+        version: 1.6.26(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.10(@types/node@24.13.3)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)))
       hono:
         specifier: ^4.8.12
         version: 4.12.32
@@ -719,6 +728,11 @@ packages:
   '@lebedevna/readonly-url@0.2.0':
     resolution: {integrity: sha512-GwkAUnJ/n2U+Dbs1Xx10P5+hTpV2lfdIY+S/AveLQDunrS9exqJ0wLdrQeN3aIwTGe6emArktDHGQ8cO2hMAew==}
     engines: {node: '>=18'}
+
+  '@lebedevna/use-helpers@0.0.1':
+    resolution: {integrity: sha512-4W+uAR3hEfRKkI9J/dmasa7GgpxNZxTGJe/2OJZB3WogGotTMCMW//n+pY6eciDcSZjk1lBBtlkWp92eJMsRGw==}
+    peerDependencies:
+      react: ^18.2.0 || ^19.0.0
 
   '@modelcontextprotocol/sdk@1.29.0':
     resolution: {integrity: sha512-zo37mZA9hJWpULgkRpowewez1y6ML5GsXJPY8FI0tBBCd77HEvza4jDqRKOXgHNn867PVGCyTdzqpz0izu5ZjQ==}
@@ -2542,6 +2556,12 @@ packages:
     peerDependencies:
       react: ^19.2.8
 
+  react-hook-form@7.85.0:
+    resolution: {integrity: sha512-U2MTriFXnclmV4rOE20p2DcRFv5WEg3FIcBFOKcOLFHDVvGIMPvLTkTWefUsonmlaVy23khVDxDWym6uJVGOzw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18 || ^19
+
   react-refresh@0.18.0:
     resolution: {integrity: sha512-QgT5//D3jfjJb6Gsjxv0Slpj23ip+HtOpnNgnb2S5zU3CB26G/IDPGoy4RJB42wzFE46DRsstbW6tKHoKbhAxw==}
     engines: {node: '>=0.10.0'}
@@ -3504,6 +3524,10 @@ snapshots:
 
   '@lebedevna/readonly-url@0.2.0': {}
 
+  '@lebedevna/use-helpers@0.0.1(react@19.2.8)':
+    dependencies:
+      react: 19.2.8
+
   '@modelcontextprotocol/sdk@1.29.0(supports-color@10.2.2)(zod@3.25.76)':
     dependencies:
       '@hono/node-server': 1.19.15(hono@4.12.32)
@@ -4077,7 +4101,7 @@ snapshots:
 
   baseline-browser-mapping@2.11.1: {}
 
-  better-auth@1.6.26(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.10(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)):
+  better-auth@1.6.26(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.10(@types/node@24.13.3)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))):
     dependencies:
       '@better-auth/core': 1.6.26(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.4)(kysely@0.29.4)(nanostores@1.4.2)
       '@better-auth/drizzle-adapter': 1.6.26(@better-auth/core@1.6.26(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.4)(kysely@0.29.4)(nanostores@1.4.2))(@better-auth/utils@0.4.2)
@@ -4099,7 +4123,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
-      vitest: 4.1.10(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)
+      vitest: 4.1.10(@types/node@24.13.3)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - '@opentelemetry/api'
@@ -5028,6 +5052,10 @@ snapshots:
       react: 19.2.8
       scheduler: 0.27.0
 
+  react-hook-form@7.85.0(react@19.2.8):
+    dependencies:
+      react: 19.2.8
+
   react-refresh@0.18.0: {}
 
   react@19.2.8: {}
@@ -5410,7 +5438,7 @@ snapshots:
       jiti: 2.7.0
       tsx: 4.23.1
 
-  vitest@4.1.10(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1):
+  vitest@4.1.10(@types/node@24.13.3)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)):
     dependencies:
       '@vitest/expect': 4.1.10
       '@vitest/mocker': 4.1.10(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
@@ -5430,23 +5458,12 @@ snapshots:
       tinyexec: 1.2.4
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.0
-      vite: 8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.13.3
     transitivePeerDependencies:
-      - '@vitejs/devtools'
-      - esbuild
-      - jiti
-      - less
       - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - terser
-      - tsx
-      - yaml
+      - vite
 
   webpack-virtual-modules@0.6.2: {}
 

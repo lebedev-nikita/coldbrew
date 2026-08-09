@@ -57,11 +57,12 @@ CREATE INDEX "auth_verification_identifier_idx" ON "auth_verification" ("identif
 -- main
 
 CREATE TABLE "user" (
-  user_id serial PRIMARY KEY,
-  auth_user_id text UNIQUE NULL REFERENCES auth_user (id),
+  user_id                       serial      PRIMARY KEY,
+  auth_user_id                  text        UNIQUE NOT NULL REFERENCES auth_user (id),
+  slug                          varchar(48) UNIQUE NOT NULL DEFAULT ('@' || gen_random_uuid()::text) CHECK (slug ~ '^@[a-zA-Z0-9\\-]{3,47}$'),
 
-  donationalerts_access_token  text NULL,
-  donationalerts_refresh_token text NULL
+  donationalerts_access_token   text NULL,
+  donationalerts_refresh_token  text NULL
 );
 
 CREATE TABLE donation (
@@ -80,9 +81,7 @@ CREATE TABLE donation (
   UNIQUE (origin, origin_donation_id)
 );
 
-CREATE INDEX donation_videos_unparsed_idx ON donation (created_at)
-WHERE videos_parsed_at IS NULL;
-
+CREATE INDEX donation_videos_unparsed_idx ON donation (created_at) WHERE videos_parsed_at IS NULL;
 
 CREATE TABLE video (
   video_id          serial  PRIMARY KEY,

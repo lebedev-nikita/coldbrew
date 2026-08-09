@@ -7,8 +7,8 @@ export const Route = createFileRoute("/donations")({
 
 function DonationsLayout() {
   const location = useLocation();
-
-  const activeTab = location.pathname === "/donations/video-queue" ? "videos" : "donations";
+  // TODO: remove this check because it isn't typesafe
+  const activeTab = location.pathname === "/donations/videos" ? "videos" : "donations";
 
   return (
     <section className="flex min-w-0 flex-1 flex-col">

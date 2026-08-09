@@ -1,0 +1,61 @@
+import VideoCard from "@client/components/video-card";
+import { SlugSchema } from "@omnistream/packages/schemas.js";
+import { createFileRoute } from "@tanstack/react-router";
+import { Wallet } from "lucide-react";
+import { z } from "zod";
+
+import { useSharedVideosQ } from "../hooks/api";
+
+export const Route = createFileRoute("/share/$slug")({
+  component: SharedVideoQueue,
+  params: z.object({
+    slug: SlugSchema,
+  }),
+});
+
+function SharedVideoQueue() {
+  const { slug } = Route.useParams();
+  const videosQ = useSharedVideosQ(slug);
+
+  return (
+    <main className="min-h-screen bg-[#f7f7fb] p-4 text-[#242238] sm:p-8">
+      <section className="mx-auto w-full max-w-4xl overflow-hidden rounded-xl border border-[#eae8ef] bg-white shadow-sm">
+        <header className="flex flex-col gap-1 border-b border-[#efedf3] p-5">
+          <h1 className="text-lg font-semibold text-[#353248]">
+            Video queue by <b>{slug}</b>
+          </h1>
+          <p className="text-xs text-[#9491a1]">Videos shared by stream supporters.</p>
+        </header>
+        {videosQ.isLoading ? (
+          <div className="space-y-px p-5" aria-label="Loading video queue">
+            <div className="h-16 animate-pulse rounded-lg bg-[#f7f6f9]" />
+            <div className="h-16 animate-pulse rounded-lg bg-[#f7f6f9]" />
+            <div className="h-16 animate-pulse rounded-lg bg-[#f7f6f9]" />
+          </div>
+        ) : videosQ.data?.length ? (
+          <div className="divide-y divide-[#f0eff3]">
+            {videosQ.data.map((video) => (
+              <VideoCard key={video.videoId} video={video} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid min-h-64 place-items-center px-5 text-center">
+            <div>
+              <div className="mx-auto grid size-11 place-items-center rounded-xl bg-violet-100 text-violet-600">
+                <Wallet aria-hidden="true" size={20} />
+              </div>
+              <h2 className="mt-4 text-sm font-semibold text-[#4c485b]">
+                {videosQ.data === null ? "Queue not found" : "No videos in the queue"}
+              </h2>
+              <p className="mt-1.5 max-w-xs text-xs leading-relaxed text-[#908d9d]">
+                {videosQ.data === null
+                  ? "This shared video queue is unavailable."
+                  : "Video links from donations will appear here."}
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
