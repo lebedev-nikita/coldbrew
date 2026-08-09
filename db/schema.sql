@@ -88,6 +88,7 @@ CREATE TABLE video (
   donation_id       int     NOT NULL REFERENCES donation (donation_id),
   url               text    NOT NULL,
   duration_seconds  int         NULL,
-  is_watched        bool    NOT NULL DEFAULT false,
+  watched_at        js_date     NULL,
+  saved_at          js_date     NULL,
   UNIQUE (donation_id, url)
 );

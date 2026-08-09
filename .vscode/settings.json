@@ -2,5 +2,6 @@
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "js/ts.experimental.useTsgo": true,
-  "dotenv.enableAutocloaking": false
+  "dotenv.enableAutocloaking": false,
+  "tailwindCSS.classFunctions": ["withProps", "cva"]
 }

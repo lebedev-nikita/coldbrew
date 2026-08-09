@@ -58,26 +58,53 @@ export class Store {
 
   async listVideos(userId: UserId): Promise<Video[]> {
     const rows = await this.sql`
-      SELECT video.video_id, video.url, video.duration_seconds, video.is_watched, donation.*
+      SELECT video.video_id, video.url, video.duration_seconds, video.watched_at, video.saved_at, donation.*
       FROM video
       JOIN donation USING (donation_id)
       WHERE donation.user_id = ${userId}
-      ORDER BY video.is_watched ASC, donation.created_at DESC, video.video_id DESC
+      ORDER BY donation.created_at DESC, video.video_id DESC
     `;
 
     const VideoRowSchema = DonationSchema.extend({
       videoId: z.number(),
       url: z.url(),
       durationSeconds: z.number().int().nonnegative().nullable(),
-      isWatched: z.boolean(),
+      watchedAt: z.date().nullable(),
+      savedAt: z.date().nullable(),
     });
 
     return z
       .array(VideoRowSchema)
       .parse(rows)
-      .map(({ videoId, url, durationSeconds, isWatched, ...donation }) =>
-        VideoSchema.parse({ videoId, url, durationSeconds, isWatched, donation }),
+      .map(({ videoId, url, durationSeconds, watchedAt, savedAt, ...donation }) =>
+        VideoSchema.parse({ videoId, url, durationSeconds, watchedAt, savedAt, donation }),
       );
+  }
+
+  async updateVideoStatus(
+    userId: UserId,
+    videoId: number,
+    status: { watchedAt?: Date | null; savedAt?: Date | null },
+  ) {
+    const rows = await this.sql`
+      UPDATE video
+      SET
+        watched_at = CASE
+          WHEN ${status.watchedAt !== undefined} THEN ${status.watchedAt ?? null}
+          ELSE watched_at
+        END,
+        saved_at = CASE
+          WHEN ${status.savedAt !== undefined} THEN ${status.savedAt ?? null}
+          ELSE saved_at
+        END
+      FROM donation
+      WHERE video.donation_id = donation.donation_id
+        AND donation.user_id = ${userId}
+        AND video.video_id = ${videoId}
+      RETURNING video.video_id, video.watched_at, video.saved_at
+    `;
+
+    return rows.length > 0;
   }
 
   async setSlug(userId: UserId, slug: string) {
@@ -109,26 +136,27 @@ export class Store {
     }
 
     const rows = await this.sql`
-      SELECT video.video_id, video.url, video.duration_seconds, video.is_watched, donation.*
+      SELECT video.video_id, video.url, video.duration_seconds, video.watched_at, video.saved_at, donation.*
       FROM video
       JOIN donation USING (donation_id)
       JOIN "user" ON "user".user_id = donation.user_id
       WHERE "user".slug = ${slug}
-      ORDER BY video.is_watched ASC, donation.created_at DESC, video.video_id DESC
+      ORDER BY donation.created_at DESC, video.video_id DESC
     `;
 
     const VideoRowSchema = DonationSchema.extend({
       videoId: z.number(),
       url: z.url(),
       durationSeconds: z.number().int().nonnegative().nullable(),
-      isWatched: z.boolean(),
+      watchedAt: z.date().nullable(),
+      savedAt: z.date().nullable(),
     });
 
     return z
       .array(VideoRowSchema)
       .parse(rows)
-      .map(({ videoId, url, durationSeconds, isWatched, ...donation }) =>
-        VideoSchema.parse({ videoId, url, durationSeconds, isWatched, donation }),
+      .map(({ videoId, url, durationSeconds, watchedAt, savedAt, ...donation }) =>
+        VideoSchema.parse({ videoId, url, durationSeconds, watchedAt, savedAt, donation }),
       );
   }
 

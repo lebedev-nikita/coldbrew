@@ -27,12 +27,35 @@ export function useSetSlugM() {
   );
 }
 
+export function useDisconnectM() {
+  const client = useQueryClient();
+
+  return useMutation(
+    trpc.integration.disconnect.mutationOptions({
+      onSuccess() {
+        client.invalidateQueries({ queryKey: trpc.userInfo.queryKey() });
+      },
+    }),
+  );
+}
+
 export function useDonationsQ() {
   return useQuery(trpc.donations.queryOptions());
 }
 
 export function useVideosQ() {
   return useQuery(trpc.videos.queryOptions());
+}
+
+export function useUpdateVideoStatusM() {
+  const client = useQueryClient();
+  return useMutation(
+    trpc.updateVideoStatus.mutationOptions({
+      onSuccess() {
+        client.invalidateQueries({ queryKey: trpc.videos.queryKey() });
+      },
+    }),
+  );
 }
 
 export function useSharedVideosQ(slug: Slug) {

@@ -39,6 +39,24 @@ export const appRouter = router({
     return await store.listVideos(ctx.userId);
   }),
 
+  updateVideoStatus: authenticatedProcedure
+    .input(
+      z
+        .object({
+          videoId: z.number().int().positive(),
+          watchedAt: z.date().nullable().optional(),
+          savedAt: z.date().nullable().optional(),
+        })
+        .refine((input) => input.watchedAt !== undefined || input.savedAt !== undefined),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const wasUpdated = await store.updateVideoStatus(ctx.userId, input.videoId, input);
+
+      if (!wasUpdated) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Video not found." });
+      }
+    }),
+
   sharedVideos: procedure
     .input(
       z.object({

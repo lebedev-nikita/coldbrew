@@ -45,7 +45,8 @@ export const VideoSchema = z.object({
   videoId: z.number(),
   url: z.url(),
   durationSeconds: z.number().int().nonnegative().nullable(),
-  isWatched: z.boolean(),
+  watchedAt: z.date().nullable(),
+  savedAt: z.date().nullable(),
   donation: DonationSchema,
 });
 export type Video = z.infer<typeof VideoSchema>;

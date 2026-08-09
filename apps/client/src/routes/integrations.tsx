@@ -1,26 +1,12 @@
 import { Button } from "@client/components/ui/button";
-import { trpc } from "@client/lib/trpc";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, ChevronRight, ShieldCheck } from "lucide-react";
 
-import { useAuthUrl, useUserInfo } from "../hooks/api";
+import { useAuthUrl, useDisconnectM, useUserInfo } from "../hooks/api";
 
 export const Route = createFileRoute("/integrations")({
   component: RouteComponent,
 });
-
-function useDisconnectM() {
-  const client = useQueryClient();
-
-  return useMutation(
-    trpc.integration.disconnect.mutationOptions({
-      onSuccess() {
-        client.invalidateQueries({ queryKey: trpc.userInfo.queryKey() });
-      },
-    }),
-  );
-}
 
 function RouteComponent() {
   const authUrl = useAuthUrl();

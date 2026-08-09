@@ -1,6 +1,7 @@
 import { Metric } from "@client/components/dashboard/metric";
 import DonationCard from "@client/components/donation-card";
 import MockChart from "@client/components/mock-chart";
+import { Button } from "@client/components/ui/button";
 import { fmtCurrency, fmtDate } from "@client/lib/fmt";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight, Copy, Share2, Sparkles, Wallet } from "lucide-react";
@@ -40,9 +41,13 @@ function Overview() {
               Here’s what’s happening across your stream.
             </p>
           </div>
-          <button className="flex w-full items-center justify-between gap-2 rounded-lg border border-[#e3e1e9] bg-white px-3 py-2.5 text-xs font-semibold text-[#646176] sm:w-auto">
+          <Button
+            className="h-auto w-full justify-between border-[#e3e1e9] bg-white px-3 py-2.5 text-xs font-semibold text-[#646176] sm:w-auto"
+            type="button"
+            variant="outline"
+          >
             Last 30 days <ChevronRight aria-hidden="true" size={16} />
-          </button>
+          </Button>
         </div>
         {success !== undefined && (
           <div
@@ -105,9 +110,14 @@ function Overview() {
                 <h2 className="text-[15px] font-semibold text-[#353248]">Donation trends</h2>
                 <p className="mt-1.5 text-xs text-[#9491a1]">Your earnings over time.</p>
               </div>
-              <button className="flex items-center gap-1 rounded-md border border-[#e3e1e9] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#646176]">
+              <Button
+                className="h-auto rounded-md border-[#e3e1e9] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#646176]"
+                size="sm"
+                type="button"
+                variant="outline"
+              >
                 Revenue <ChevronRight aria-hidden="true" size={15} />
-              </button>
+              </Button>
             </div>
             <div className="relative h-52 px-4 pt-3 pb-2 pl-10">
               <div className="absolute bottom-9 left-2 flex h-[164px] flex-col justify-between text-[10px] text-[#aaa6b5]">
@@ -168,9 +178,12 @@ function Overview() {
                 Bring your donations to life on stream with a custom browser source.
               </p>
             </div>
-            <button className="z-10 ml-auto flex items-center gap-1 rounded-lg bg-white px-2.5 py-2 text-[11px] font-bold text-violet-700 dark:text-white">
+            <Button
+              className="z-10 ml-auto h-auto bg-white px-2.5 py-2 text-[11px] font-bold text-violet-700 hover:bg-white/90 dark:text-white"
+              type="button"
+            >
               Create overlay <ChevronRight aria-hidden="true" size={17} />
-            </button>
+            </Button>
             <span className="absolute -top-16 -right-16 size-[148px] rounded-full border border-white/15" />
           </article>
         </section>
