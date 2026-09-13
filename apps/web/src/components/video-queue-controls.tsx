@@ -25,9 +25,9 @@ const i18n = createI18n({
     en: "New queue",
     ru: "Новая очередь",
   },
-  queueSettings: {
-    en: "Queue settings",
-    ru: "Настройки очереди",
+  editVideoQueue: {
+    en: "Edit queue",
+    ru: "Редактировать очередь",
   },
   queueName: {
     en: "Queue name",
@@ -77,27 +77,85 @@ export function VideoQueueControls({
   const selected =
     queues.find((queue) => queue.videoQueueId === videoQueueId) ??
     (videoQueueId === undefined ? queues.find((queue) => queue.isDefault) : undefined);
+  const isCreatingQueue = editing === "new";
 
   return (
-    <div className="flex shrink-0 flex-col gap-2 border-b border-border p-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <nav
-          aria-label={t("videoQueues")}
-          className="flex w-full min-w-0 flex-none flex-wrap gap-1 sm:w-auto sm:flex-1"
-        >
-          {queuesQ.isLoading && (
-            <span role="status" className="text-sm text-muted-foreground">
-              {t("loadingQueues")}
-            </span>
-          )}
-          {queues.map((queue) => (
+    <div className="flex shrink-0 flex-col gap-1.5 border-b border-border px-3 py-2">
+      <nav aria-label={t("videoQueues")} className="flex min-w-0 flex-wrap items-center gap-1">
+        {queuesQ.isLoading && (
+          <span role="status" className="text-sm text-muted-foreground">
+            {t("loadingQueues")}
+          </span>
+        )}
+        {queues.map((queue) => {
+          const isSelected = selected?.videoQueueId === queue.videoQueueId;
+          const isEditing = editing !== "new" && editing?.videoQueueId === queue.videoQueueId;
+
+          if (isEditing)
+            return (
+              <QueueForm
+                id="video-queue-editor"
+                key={queue.videoQueueId}
+                queue={queue}
+                onCancel={() => setEditing(null)}
+                onSaved={(savedQueue) => {
+                  setEditing(null);
+                  onSelect(savedQueue.videoQueueId);
+                }}
+              />
+            );
+
+          if (isSelected)
+            return (
+              <div
+                className="grid min-w-0 max-w-full grid-cols-[minmax(0,1fr)_auto] items-center"
+                key={queue.videoQueueId}
+              >
+                <Link
+                  to="/videos"
+                  onClick={() => setEditing(null)}
+                  aria-current="page"
+                  className={buttonVariants({
+                    variant: "secondary",
+                    size: "sm",
+                    className: "min-w-0 overflow-hidden rounded-r-none pr-2",
+                  })}
+                  search={(previous) => ({
+                    ...previous,
+                    videoQueueId: queue.videoQueueId,
+                    videoId: undefined,
+                    page: 1,
+                    videoPriorityId: "all",
+                  })}
+                >
+                  <span className="truncate">{queue.label}</span>
+                </Link>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        aria-label={t("editVideoQueue")}
+                        className="w-5 rounded-l-none border-0 border-l border-secondary-foreground/10"
+                        onClick={() => setEditing(queue)}
+                        size="icon-sm"
+                        variant="secondary"
+                      >
+                        <Icons.edit aria-hidden="true" className="size-3" />
+                      </Button>
+                    }
+                  />
+                  <TooltipContent>{t("editVideoQueue")}</TooltipContent>
+                </Tooltip>
+              </div>
+            );
+
+          return (
             <Link
               key={queue.videoQueueId}
               to="/videos"
               onClick={() => setEditing(null)}
-              aria-current={selected?.videoQueueId === queue.videoQueueId ? "page" : undefined}
               className={buttonVariants({
-                variant: selected?.videoQueueId === queue.videoQueueId ? "secondary" : "ghost",
+                variant: "ghost",
                 size: "sm",
                 className: "max-w-full",
               })}
@@ -111,27 +169,37 @@ export function VideoQueueControls({
             >
               <span className="truncate">{queue.label}</span>
             </Link>
-          ))}
-        </nav>
-        <Button
-          size="sm"
-          variant="ghost"
-          disabled={!selected}
-          onClick={() => selected && setEditing(selected)}
-        >
-          <Icons.settings aria-hidden="true" />
-          {t("queueSettings")}
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={queuesQ.isLoading || queuesQ.isError}
-          onClick={() => setEditing("new")}
-        >
-          <Icons.addVideo aria-hidden="true" />
-          {t("createVideoQueue")}
-        </Button>
-      </div>
+          );
+        })}
+        {isCreatingQueue ? (
+          <QueueForm
+            id="video-queue-editor"
+            key="new"
+            onCancel={() => setEditing(null)}
+            onSaved={(queue) => {
+              setEditing(null);
+              onSelect(queue.videoQueueId);
+            }}
+          />
+        ) : (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  aria-label={t("createVideoQueue")}
+                  disabled={queuesQ.isLoading || queuesQ.isError}
+                  onClick={() => setEditing("new")}
+                  size="icon-sm"
+                  variant="outline"
+                >
+                  <Icons.addQueue aria-hidden="true" />
+                </Button>
+              }
+            />
+            <TooltipContent>{t("createVideoQueue")}</TooltipContent>
+          </Tooltip>
+        )}
+      </nav>
       {queuesQ.isError && (
         <QueryErrorState
           className="min-h-20 p-2"
@@ -139,26 +207,17 @@ export function VideoQueueControls({
           onRetry={() => void queuesQ.refetch()}
         />
       )}
-      {editing !== null && (
-        <QueueForm
-          key={editing === "new" ? "new" : editing.videoQueueId}
-          queue={editing === "new" ? undefined : editing}
-          onCancel={() => setEditing(null)}
-          onSaved={(queue) => {
-            setEditing(null);
-            onSelect(queue.videoQueueId);
-          }}
-        />
-      )}
     </div>
   );
 }
 
 function QueueForm({
+  id,
   queue,
   onCancel,
   onSaved,
 }: {
+  id: string;
   queue?: VideoQueue;
   onCancel: () => void;
   onSaved: (queue: VideoQueue) => void;
@@ -168,57 +227,133 @@ function QueueForm({
   const [isDefault, setIsDefault] = useState(queue?.isDefault ?? false);
   const { create, update } = useVideoQueueMutations();
   const mutation = queue ? update : create;
+  const trimmedLabel = label.trim();
+  const isDirty = queue
+    ? trimmedLabel !== queue.label || isDefault !== queue.isDefault
+    : trimmedLabel.length > 0;
+  const saveAction = mutation.isPending ? "saving" : "save";
+  const isNameTaken = mutation.error?.data?.code === "CONFLICT";
+
   return (
     <form
-      className="flex flex-col gap-3 rounded-lg bg-muted p-3"
+      autoComplete="off"
+      className="flex w-full min-w-0 flex-col gap-1.5 sm:w-fit"
+      id={id}
       onSubmit={(event) => {
         event.preventDefault();
+        if (!trimmedLabel || !isDirty || mutation.isPending) return;
         if (queue)
           update.mutate(
-            { videoQueueId: queue.videoQueueId, label: label.trim(), isDefault },
+            { videoQueueId: queue.videoQueueId, label: trimmedLabel, isDefault },
             { onSuccess: onSaved },
           );
-        else create.mutate({ label: label.trim() }, { onSuccess: onSaved });
+        else create.mutate({ label: trimmedLabel }, { onSuccess: onSaved });
       }}
     >
-      <div className="grid gap-3 md:grid-cols-[minmax(12rem,1fr)_auto_auto] md:items-end">
-        <Field>
-          <FieldLabel htmlFor="video-queue-name">{t("queueName")}</FieldLabel>
-          <Input
-            id="video-queue-name"
-            required
-            maxLength={64}
-            value={label}
-            disabled={mutation.isPending}
-            onChange={(event) => setLabel(event.target.value)}
-          />
-        </Field>
-        {queue ? (
-          <Field className="min-h-8" orientation="horizontal">
-            <Switch
-              id="default-video-queue"
-              checked={isDefault}
-              disabled={queue.isDefault || mutation.isPending}
-              onCheckedChange={setIsDefault}
+      <div className="flex min-w-0 flex-col items-center gap-1 sm:flex-row">
+        <Field className="min-w-0 flex-1 sm:w-auto sm:flex-none" data-invalid={isNameTaken}>
+          <FieldLabel className="sr-only" htmlFor="video-queue-name">
+            {t("queueName")}
+          </FieldLabel>
+          <div
+            className={
+              queue
+                ? "grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-lg border border-input bg-background/60 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20 has-[input[aria-invalid=true]]:border-destructive sm:w-fit sm:grid-cols-[auto_16rem_auto_auto]"
+                : "grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-lg border border-input bg-background/60 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20 has-[input[aria-invalid=true]]:border-destructive sm:w-fit sm:grid-cols-[auto_16rem_auto]"
+            }
+          >
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    aria-label={t(saveAction)}
+                    className="col-start-1 row-start-1 h-8 rounded-none"
+                    disabled={!trimmedLabel || !isDirty || mutation.isPending}
+                    size="icon"
+                    type="submit"
+                    variant="ghost"
+                  >
+                    {mutation.isPending ? (
+                      <Icons.loader aria-hidden="true" className="animate-spin" />
+                    ) : (
+                      <Icons.submit aria-hidden="true" />
+                    )}
+                  </Button>
+                }
+              />
+              <TooltipContent>{t(saveAction)}</TooltipContent>
+            </Tooltip>
+            <Input
+              aria-describedby={isNameTaken ? "video-queue-error" : undefined}
+              aria-invalid={isNameTaken}
+              autoComplete="off"
+              className="col-start-2 row-start-1 min-w-0 rounded-none border-0 bg-transparent font-medium focus-visible:ring-0 dark:bg-transparent"
+              disabled={mutation.isPending}
+              id="video-queue-name"
+              maxLength={64}
+              onChange={(event) => setLabel(event.target.value)}
+              required
+              value={label}
             />
-            <FieldLabel htmlFor="default-video-queue">{t("defaultVideoQueue")}</FieldLabel>
-          </Field>
-        ) : (
-          <p className="flex min-h-8 items-center text-xs text-muted-foreground">
-            {t("newQueuePrioritiesHelp")}
-          </p>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    aria-label={t("cancel")}
+                    className="col-start-3 row-start-1 h-8 rounded-none"
+                    disabled={mutation.isPending}
+                    onClick={onCancel}
+                    size="icon"
+                    type="button"
+                    variant="ghost"
+                  >
+                    <Icons.cancel aria-hidden="true" />
+                  </Button>
+                }
+              />
+              <TooltipContent>{t("cancel")}</TooltipContent>
+            </Tooltip>
+            {queue && (
+              <Field
+                className="col-span-3 row-start-2 min-h-8 w-auto border-t border-input px-2 text-muted-foreground sm:col-span-1 sm:col-start-4 sm:row-start-1 sm:border-t-0 sm:border-l"
+                orientation="horizontal"
+              >
+                <Switch
+                  checked={isDefault}
+                  disabled={queue.isDefault || mutation.isPending}
+                  id="default-video-queue"
+                  onCheckedChange={setIsDefault}
+                  size="sm"
+                />
+                <FieldLabel className="whitespace-nowrap" htmlFor="default-video-queue">
+                  {t("defaultVideoQueue")}
+                </FieldLabel>
+              </Field>
+            )}
+          </div>
+        </Field>
+        {!queue && (
+          <div className="flex min-h-8 shrink-0 items-center">
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    aria-label={t("newQueuePrioritiesHelp")}
+                    size="icon"
+                    type="button"
+                    variant="ghost"
+                  >
+                    <Icons.help aria-hidden="true" />
+                  </Button>
+                }
+              />
+              <TooltipContent>{t("newQueuePrioritiesHelp")}</TooltipContent>
+            </Tooltip>
+          </div>
         )}
-        <div className="flex min-h-8 flex-wrap items-center justify-end gap-2">
-          <Button type="button" variant="ghost" disabled={mutation.isPending} onClick={onCancel}>
-            {t("cancel")}
-          </Button>
-          <Button type="submit" disabled={!label.trim() || mutation.isPending}>
-            {t(mutation.isPending ? "saving" : "save")}
-          </Button>
-        </div>
       </div>
       {mutation.error && (
-        <FieldError>
+        <FieldError className="max-w-sm" id="video-queue-error">
           {t(mutation.error.data?.code === "CONFLICT" ? "queueNameTaken" : "queueSaveFailed")}
         </FieldError>
       )}

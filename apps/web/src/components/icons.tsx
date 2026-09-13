@@ -19,6 +19,7 @@ export const PlatformIcons = {
 
 export const Icons = {
   addVideo: icons.ListPlus,
+  addQueue: icons.Plus,
   alerts: icons.Bell,
   ban: icons.Ban,
   chat: icons.MessagesSquare,
