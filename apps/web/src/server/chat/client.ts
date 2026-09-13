@@ -48,6 +48,7 @@ function toServiceError(cause: unknown): ChatServiceError {
   if (cause instanceof RequestError) {
     return new ChatServiceError(cause.type, { cause, status: cause.status });
   }
+  // fallow-ignore-next-line code-duplication -- Each remote service keeps a distinct typed error seam.
   return new ChatServiceError("unexpected error", { cause });
 }
 

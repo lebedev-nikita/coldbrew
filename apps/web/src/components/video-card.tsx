@@ -166,6 +166,14 @@ type VideoFormValues = VideoTimingValues & {
   amount: string;
 };
 
+function videoFormValues(video: Video): VideoFormValues {
+  return {
+    amount: formatMoneyInputValue(video.queueAmount ?? MoneyAmountSchema.parse("0.00")),
+    startTime: formatVideoTime(video.startSeconds),
+    endTime: video.endSeconds === null ? "" : formatVideoTime(video.endSeconds),
+  };
+}
+
 const getYoutubeThumbnailUrl = (videoId: string) =>
   `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`;
 
@@ -205,30 +213,18 @@ export default function VideoCard({
   const amountErrorId = `video-amount-error-${video.videoId}`;
   const [isEditing, setIsEditing] = useState(false);
   const form = useForm<VideoFormValues>({
-    defaultValues: {
-      amount: formatMoneyInputValue(video.queueAmount ?? MoneyAmountSchema.parse("0.00")),
-      startTime: formatVideoTime(video.startSeconds),
-      endTime: video.endSeconds === null ? "" : formatVideoTime(video.endSeconds),
-    },
+    defaultValues: videoFormValues(video),
     mode: "onChange",
   });
   const { formState, handleSubmit, register, reset } = form;
 
   const startEditing = () => {
-    reset({
-      amount: formatMoneyInputValue(video.queueAmount ?? MoneyAmountSchema.parse("0.00")),
-      startTime: formatVideoTime(video.startSeconds),
-      endTime: video.endSeconds === null ? "" : formatVideoTime(video.endSeconds),
-    });
+    reset(videoFormValues(video));
     setIsEditing(true);
   };
 
   const cancelEditing = () => {
-    reset({
-      amount: formatMoneyInputValue(video.queueAmount ?? MoneyAmountSchema.parse("0.00")),
-      startTime: formatVideoTime(video.startSeconds),
-      endTime: video.endSeconds === null ? "" : formatVideoTime(video.endSeconds),
-    });
+    reset(videoFormValues(video));
     setIsEditing(false);
   };
 

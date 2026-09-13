@@ -20,6 +20,8 @@ import {
 import type { Sql } from "postgres";
 import { z } from "zod";
 
+import { getPaginationWindow } from "../../pagination.js";
+
 function isUserSlugConflict(error: unknown) {
   return (
     typeof error === "object" &&
@@ -48,6 +50,7 @@ export class Store {
     const focusedDonationId = input.donationId?.toString() ?? null;
     const searchPattern = `%${input.query}%`;
     const source = input.source ?? null;
+    // fallow-ignore-next-line code-duplication -- Donation and video queries have different filters and row contracts.
     const countRows = await this.sql`
       SELECT count(*)::int AS total
       FROM donation
@@ -65,9 +68,7 @@ export class Store {
       total: z.int().nonnegative(),
     });
     const total = countSchema.parse(countRows[0]).total;
-    const totalPages = Math.ceil(total / input.pageSize);
-    const page = Math.min(input.page, Math.max(totalPages, 1));
-    const offset = (page - 1) * input.pageSize;
+    const { offset, page, totalPages } = getPaginationWindow(total, input.page, input.pageSize);
     const rows = await this.sql`
       SELECT *
       FROM donation
