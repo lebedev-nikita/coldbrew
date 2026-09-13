@@ -164,6 +164,12 @@ The public overlay page presents the token to an `apps/web` tRPC subscription. `
 the owner and relays only that user's feed from `apps/chat`. Rotation invalidates the previous URL
 immediately.
 
+The overlay URL accepts a `background` query parameter with `transparent`, `black`, or `white`.
+Missing and invalid values resolve to `transparent`. The authenticated multichat page adds the
+selected value when it copies the OBS link; background selection does not require token rotation
+or persistent storage. On the black background, messages render without their own card surface so
+they blend into the overlay; transparent and white backgrounds retain contrast behind each message.
+
 ## Development and operations
 
 `just dev-db-up` starts the repository-wide PostgreSQL and NATS infrastructure and creates the
