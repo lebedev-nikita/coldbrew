@@ -95,26 +95,43 @@ export function SlugEditor({ className, showAllVideos = false }: Props) {
     }
   };
 
+  const publicQueueStatus = t(
+    userInfo.publicQueueSettings.enabled ? "publicQueueEnabled" : "publicQueueDisabled",
+  );
+  const slugAction = setSlugM.isPending
+    ? "saving"
+    : formState.isDirty
+      ? "save"
+      : copied
+        ? "copied"
+        : "copy";
+
   return (
-    <div className={cn("border-b border-border p-3 sm:px-5", className)}>
-      <form
-        className="flex flex-col gap-2"
-        onSubmit={(event) => void handleSubmit(saveSlug)(event)}
-      >
-        <div className="flex items-start gap-2">
-          <Field className="min-w-0 grow" data-invalid={Boolean(formState.errors.slug)}>
+    <div className={cn("border-b border-border px-3 py-2 sm:px-5", className)}>
+      <form className="flex flex-col gap-1.5" onSubmit={handleSubmit(saveSlug)}>
+        <div className="flex min-w-0 items-start gap-1">
+          <Field
+            className="min-w-0 flex-1 sm:w-64 sm:flex-none"
+            data-invalid={Boolean(formState.errors.slug)}
+          >
             <FieldLabel className="sr-only" htmlFor="public-video-queue-slug">
               {t("publicVideoQueueSlug")}
             </FieldLabel>
             <FieldDescription className="sr-only" id="slug-help">
               {t("slugHelp")}
             </FieldDescription>
-            <div className="flex min-w-0 rounded-lg border border-input bg-background/60 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20 has-[input[aria-invalid=true]]:border-destructive">
+            <div className="flex w-full min-w-0 overflow-hidden rounded-lg border border-input bg-background/60 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20 has-[input[aria-invalid=true]]:border-destructive">
+              <span
+                aria-hidden="true"
+                className="flex h-8 shrink-0 items-center border-r border-input px-2 text-sm font-medium text-muted-foreground select-none"
+              >
+                @
+              </span>
               <Input
                 autoComplete="off"
                 aria-describedby={`slug-help${formState.errors.slug ? " slug-error" : ""}`}
                 aria-invalid={Boolean(formState.errors.slug)}
-                className="min-w-0 grow border-0 bg-transparent focus-visible:ring-0 dark:bg-transparent"
+                className="min-w-0 flex-1 rounded-none border-0 bg-transparent font-medium tabular-nums focus-visible:ring-0 dark:bg-transparent"
                 id="public-video-queue-slug"
                 maxLength={47}
                 {...register("slug", {
@@ -126,11 +143,38 @@ export function SlugEditor({ className, showAllVideos = false }: Props) {
                       event.target instanceof HTMLInputElement
                     ) {
                       event.target.value = event.target.value.toLowerCase();
+                      setCopied(false);
                     }
                   },
                   validate: (value) => SlugSchema.safeParse(value).success || t("slugInvalid"),
                 })}
               />
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      aria-label={t(slugAction)}
+                      className="h-8 rounded-none border-0 border-l border-input"
+                      disabled={(formState.isDirty && !formState.isValid) || setSlugM.isPending}
+                      onClick={formState.isDirty ? undefined : () => void copyShareUrl()}
+                      size="icon"
+                      type={formState.isDirty ? "submit" : "button"}
+                      variant={formState.isDirty ? "default" : "ghost"}
+                    >
+                      {setSlugM.isPending ? (
+                        <Icons.loader aria-hidden="true" className="animate-spin" />
+                      ) : formState.isDirty ? (
+                        <Icons.save aria-hidden="true" />
+                      ) : copied ? (
+                        <Icons.copied aria-hidden="true" />
+                      ) : (
+                        <Icons.copy aria-hidden="true" />
+                      )}
+                    </Button>
+                  }
+                />
+                <TooltipContent>{t(slugAction)}</TooltipContent>
+              </Tooltip>
             </div>
             <FieldError errors={[formState.errors.slug]} id="slug-error" />
           </Field>
@@ -138,86 +182,29 @@ export function SlugEditor({ className, showAllVideos = false }: Props) {
             <Tooltip>
               <TooltipTrigger
                 render={
-                  <Button
-                    aria-label={t(setSlugM.isPending ? "saving" : "save")}
-                    disabled={!formState.isValid || !formState.isDirty || setSlugM.isPending}
-                    size="icon"
-                    type="submit"
-                  >
-                    {setSlugM.isPending ? (
-                      <Icons.loader aria-hidden="true" className="animate-spin" />
-                    ) : (
-                      <Icons.save aria-hidden="true" />
-                    )}
-                  </Button>
-                }
-              />
-              <TooltipContent>{t(setSlugM.isPending ? "saving" : "save")}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    aria-label={t(copied ? "copied" : "copy")}
-                    onClick={() => void copyShareUrl()}
-                    size="icon"
-                    type="button"
-                    variant="outline"
-                  >
-                    {copied ? (
-                      <Icons.copied aria-hidden="true" />
-                    ) : (
-                      <Icons.copy aria-hidden="true" />
-                    )}
-                  </Button>
-                }
-              />
-              <TooltipContent>{t(copied ? "copied" : "copy")}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                aria-label={t(
-                  userInfo.publicQueueSettings.enabled
-                    ? "publicQueueEnabled"
-                    : "publicQueueDisabled",
-                )}
-                className="grid size-8 place-items-center rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-                tabIndex={0}
-                type="button"
-              >
-                <span
-                  aria-hidden="true"
-                  className={
-                    userInfo.publicQueueSettings.enabled
-                      ? "size-2 rounded-full bg-green-500"
-                      : "size-2 rounded-full bg-amber-500"
-                  }
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                {t(
-                  userInfo.publicQueueSettings.enabled
-                    ? "publicQueueEnabled"
-                    : "publicQueueDisabled",
-                )}
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                render={
                   <Link
-                    aria-label={t("settings")}
+                    aria-label={`${t("settings")}: ${publicQueueStatus}`}
                     className={buttonVariants({
+                      className: "relative",
                       size: "icon",
                       variant: "ghost",
                     })}
                     to="/settings"
                   >
                     <Icons.settings aria-hidden="true" />
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "absolute top-1 right-1 size-1.5 rounded-full ring-2 ring-background",
+                        userInfo.publicQueueSettings.enabled ? "bg-green-500" : "bg-amber-500",
+                      )}
+                    />
                   </Link>
                 }
               />
-              <TooltipContent>{t("settings")}</TooltipContent>
+              <TooltipContent>
+                {t("settings")} · {publicQueueStatus}
+              </TooltipContent>
             </Tooltip>
             {showAllVideos && (
               <Tooltip>
