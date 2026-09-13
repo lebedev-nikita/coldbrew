@@ -18,6 +18,7 @@ import { Switch } from "@web/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@web/components/ui/tooltip";
 import { useChatServiceMutations, useChatServiceQueries } from "@web/hooks/chat-service";
 import { useChatServiceStream } from "@web/hooks/use-chat-service-stream";
+import { withChatOverlayBackground, type ChatOverlayBackground } from "@web/lib/chat-overlay";
 import { createI18n, createTranslator, useI18n, type TranslationKey } from "@web/lib/i18n";
 import { cn } from "@web/lib/utils";
 import { useState, type FormEvent } from "react";
@@ -196,6 +197,22 @@ const copy = createI18n({
     en: "OBS link",
     ru: "Ссылка для OBS",
   },
+  overlayBackground: {
+    en: "Overlay background",
+    ru: "Фон оверлея",
+  },
+  overlayBackgroundTransparent: {
+    en: "Transparent",
+    ru: "Прозрачный",
+  },
+  overlayBackgroundBlack: {
+    en: "Black",
+    ru: "Чёрный",
+  },
+  overlayBackgroundWhite: {
+    en: "White",
+    ru: "Белый",
+  },
   rotateOverlay: {
     en: "Rotate",
     ru: "Обновить",
@@ -278,6 +295,7 @@ function ChatPage() {
   const [message, setMessage] = useState("");
   const [broadcastResult, setBroadcastResult] = useState<ChatBroadcastResult | null>(null);
   const [overlayUrl, setOverlayUrl] = useState<string | null>(null);
+  const [overlayBackground, setOverlayBackground] = useState<ChatOverlayBackground>("transparent");
   const [overlayCopied, setOverlayCopied] = useState(false);
 
   const {
@@ -324,6 +342,8 @@ function ChatPage() {
         connection.capabilities.includes("send_message")
       );
     }).length ?? 0;
+  const configuredOverlayUrl =
+    overlayUrl === null ? null : withChatOverlayBackground(overlayUrl, overlayBackground);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -683,10 +703,39 @@ function ChatPage() {
                 {config.hasOverlayToken ? copyT("rotateOverlay") : copyT("createOverlay")}
               </Button>
             </div>
-            {overlayUrl !== null && (
+            <fieldset className="flex flex-col gap-1.5">
+              <legend className="text-xs text-muted-foreground">
+                {copyT("overlayBackground")}
+              </legend>
+              <div className="grid grid-cols-3 gap-1 rounded-lg border border-border bg-muted/40 p-1">
+                {(
+                  [
+                    ["transparent", copyT("overlayBackgroundTransparent")],
+                    ["black", copyT("overlayBackgroundBlack")],
+                    ["white", copyT("overlayBackgroundWhite")],
+                  ] as const
+                ).map(([value, label]) => (
+                  <Button
+                    aria-pressed={overlayBackground === value}
+                    className="min-w-0 px-1.5"
+                    key={value}
+                    onClick={() => {
+                      setOverlayBackground(value);
+                      setOverlayCopied(false);
+                    }}
+                    size="xs"
+                    type="button"
+                    variant={overlayBackground === value ? "secondary" : "ghost"}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+            </fieldset>
+            {configuredOverlayUrl !== null && (
               <Button
                 onClick={() => {
-                  void navigator.clipboard.writeText(overlayUrl);
+                  void navigator.clipboard.writeText(configuredOverlayUrl);
                   setOverlayCopied(true);
                 }}
                 size="xs"

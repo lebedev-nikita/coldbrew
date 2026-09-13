@@ -42,6 +42,9 @@ dev-alerts:
 dev-web:
   bunx dotenvx run -f .env --overload -- sh -c 'cd apps/web && bun run dev'
 
+dev-ladle:
+  cd apps/web && bunx ladle serve
+
 dev:
   bunx concurrently -n 'web,chat,donations,video' 'just dev-web' 'just dev-chat' 'just dev-donations' 'just dev-video'
 

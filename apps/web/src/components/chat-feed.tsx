@@ -4,7 +4,7 @@ import type {
   ChatModerationCommand,
 } from "@coldbrew/packages/chat.js";
 import { cn } from "@web/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import { useTextWithLinks } from "../hooks/use-text-with-links";
 import { CosmicArt } from "./cosmic-art";
@@ -22,11 +22,13 @@ const providerColor = {
 function Message({
   message,
   overlay,
+  overlayMessageSurface,
   capabilities,
   onModerate,
 }: {
   message: ChatMessage;
   overlay: boolean;
+  overlayMessageSurface: "card" | "transparent";
   capabilities: readonly ChatCapability[];
   onModerate?: (command: ChatModerationCommand) => void;
 }) {
@@ -35,13 +37,30 @@ function Message({
     <article
       className={cn(
         "group/message flex gap-3 border-l-2 py-2 pl-3",
-        overlay && "rounded-r-xl bg-black/65 pr-3 text-white shadow-sm backdrop-blur-sm",
+        overlay &&
+          "w-fit max-w-[min(46rem,calc(100vw-2rem))] border-l-0 rounded-xl px-3.5 py-2.5 text-white motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-300",
+        overlay &&
+          overlayMessageSurface === "card" &&
+          "bg-[#171018]/88 shadow-[0_8px_24px_rgba(15,8,14,0.28)] backdrop-blur-md",
       )}
-      style={{ borderColor: providerColor[message.provider] }}
+      style={overlay ? undefined : { borderColor: providerColor[message.provider] }}
     >
-      <img alt="" className="mt-0.5 size-3.5 shrink-0" src={PlatformIcons[message.provider]} />
-      <p className="min-w-0 text-sm leading-relaxed">
-        <strong className="pr-2 font-semibold">{message.author.displayName}</strong>
+      <img
+        alt=""
+        className={cn("mt-0.5 shrink-0", overlay ? "size-[18px]" : "size-3.5")}
+        src={PlatformIcons[message.provider]}
+      />
+      <p
+        className={cn(
+          "min-w-0 leading-relaxed",
+          overlay
+            ? "text-[clamp(0.9375rem,1.15vw,1.125rem)] [text-shadow:0_1px_2px_rgb(0_0_0/0.45)]"
+            : "text-sm",
+        )}
+      >
+        <strong className={cn("pr-2 font-semibold", overlay && "text-white")}>
+          {message.author.displayName}
+        </strong>
         <span className={overlay ? "text-white/90" : "text-muted-foreground"}>
           {text.map((part, index) =>
             part.type === "url" ? (
@@ -140,17 +159,20 @@ function Message({
 export function ChatFeed({
   messages,
   overlay = false,
+  overlayMessageSurface = "card",
   emptyLabel,
   capabilitiesForSource = () => [],
   onModerate,
 }: {
   messages: ChatMessage[];
   overlay?: boolean;
+  overlayMessageSurface?: "card" | "transparent";
   emptyLabel: string;
   capabilitiesForSource?: (sourceId: ChatMessage["sourceId"]) => readonly ChatCapability[];
   onModerate?: (command: ChatModerationCommand) => void;
 }) {
   const viewportRef = useRef<HTMLDivElement>(null);
+  const didScrollToInitialMessagesRef = useRef(false);
   const [nearBottom, setNearBottom] = useState(true);
   const [unread, setUnread] = useState(0);
 
@@ -162,7 +184,19 @@ export function ChatFeed({
     setUnread(0);
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (messages.length === 0) return;
+
+    if (!didScrollToInitialMessagesRef.current) {
+      viewportRef.current?.scrollTo({
+        top: viewportRef.current.scrollHeight,
+        behavior: "instant",
+      });
+      didScrollToInitialMessagesRef.current = true;
+      setUnread(0);
+      return;
+    }
+
     if (nearBottom || overlay) {
       scrollToBottom();
     } else {
@@ -173,38 +207,42 @@ export function ChatFeed({
   return (
     <div className="relative flex min-h-0 grow flex-col">
       <div
-        className={cn("flex min-h-0 grow flex-col gap-1 overflow-y-auto", overlay ? "p-3" : "p-4")}
+        aria-live={overlay ? "polite" : undefined}
+        className={cn(
+          "flex min-h-0 grow flex-col gap-1 overflow-y-auto",
+          overlay
+            ? "pointer-events-none p-[clamp(1rem,2.5vw,2rem)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            : "p-4",
+        )}
         onScroll={(event) => {
           const target = event.currentTarget;
           setNearBottom(target.scrollHeight - target.scrollTop - target.clientHeight < 80);
         }}
         ref={viewportRef}
       >
-        {messages.length === 0 ? (
-          <div
-            className={cn(
-              "grid grow place-items-center text-sm",
-              overlay ? "text-white/70" : "text-muted-foreground",
-            )}
-          >
+        {messages.length === 0 && !overlay ? (
+          <div className="grid grow place-items-center text-sm text-muted-foreground">
             <div className="flex max-w-sm flex-col items-center gap-3 text-center">
-              {!overlay && (
-                <CosmicArt variant="orbit" className="w-36 text-primary/40 opacity-65" />
-              )}
+              <CosmicArt variant="orbit" className="w-36 text-primary/40 opacity-65" />
               <p className="leading-relaxed">{emptyLabel}</p>
             </div>
           </div>
-        ) : (
-          messages.map((message) => (
-            <Message
-              key={`${message.provider}:${message.id}`}
-              message={message}
-              overlay={overlay}
-              capabilities={capabilitiesForSource(message.sourceId)}
-              onModerate={onModerate}
-            />
-          ))
-        )}
+        ) : messages.length > 0 ? (
+          <div
+            className={cn(overlay ? "mt-auto flex w-full flex-col items-start gap-2" : "contents")}
+          >
+            {messages.map((message) => (
+              <Message
+                key={`${message.provider}:${message.id}`}
+                message={message}
+                overlay={overlay}
+                overlayMessageSurface={overlayMessageSurface}
+                capabilities={capabilitiesForSource(message.sourceId)}
+                onModerate={onModerate}
+              />
+            ))}
+          </div>
+        ) : null}
       </div>
       {!overlay && unread > 0 && (
         <Button
