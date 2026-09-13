@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "categories": {},
+  "jsPlugins": [{ "name": "eslint-js", "specifier": "oxlint-plugin-eslint" }],
   "options": {
     "denyWarnings": true,
     "reportUnusedDisableDirectives": "error",
@@ -17,6 +18,13 @@
     }
   },
   "rules": {
+    "eslint-js/no-restricted-syntax": [
+      "error",
+      {
+        "selector": "NewExpression[callee.type='Identifier'][callee.name='URL'] > MemberExpression.arguments:nth-child(2)[computed=false][property.type='Identifier'][property.name='url'] > MetaProperty.object[meta.name='import'][property.name='meta']",
+        "message": "Use import.meta.resolve(...) instead of new URL(..., import.meta.url)."
+      }
+    ],
     "require-yield": "off",
     "import/no-cycle": "error",
     "no-restricted-imports": [

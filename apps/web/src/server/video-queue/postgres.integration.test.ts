@@ -14,11 +14,13 @@ import { createPostgresVideoQueue } from "./postgres.js";
 
 const databaseUrl = process.env["VIDEO_INGEST_TEST_DATABASE_URL"];
 const execFileAsync = promisify(execFile);
-const repositoryRoot = fileURLToPath(new URL("../../../../../", import.meta.url));
+const repositoryRoot = fileURLToPath(import.meta.resolve("../../../../../"));
 
 async function readVideoQueueMigrationUp() {
   const migration = await readFile(
-    new URL("../../../../../db/migrations/20260909195358_video_queues.sql", import.meta.url),
+    fileURLToPath(
+      import.meta.resolve("../../../../../db/migrations/20260909195358_video_queues.sql"),
+    ),
     "utf8",
   );
   return migration.split("-- migrate:down", 1)[0]!.replace("-- migrate:up", "");
