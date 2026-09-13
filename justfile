@@ -98,7 +98,7 @@ lint-go:
   fi
 
 lint-fallow:
-  bunx fallow dead-code --fail-on-issues
+  bunx fallow --only dead-code --only dupes --fail-on-issues
 
 lint: fmt-check lint-ts lint-go lint-fallow
 

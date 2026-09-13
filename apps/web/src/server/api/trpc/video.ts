@@ -35,6 +35,18 @@ const PAGE_SIZE = 25;
 const PageSchema = z.int().positive();
 const VideoStatusSchema = z.enum(["all", "notwatched", "watched", "bookmarked"]);
 const SharedVideoStatusSchema = z.enum(["queue", "watched"]);
+const videoDetailsShape = {
+  amount: MoneyAmountSchema,
+  startSeconds: z.int().nonnegative(),
+  endSeconds: z.int().positive().nullable(),
+};
+const validVideoTiming = ({
+  startSeconds,
+  endSeconds,
+}: {
+  startSeconds: number;
+  endSeconds: number | null;
+}) => endSeconds === null || endSeconds > startSeconds;
 const SharedVideoPageSchema = z
   .object({
     items: z.array(SharedVideoSchema),
@@ -181,17 +193,12 @@ function createVideoProcedures(queue: VideoQueue) {
           .object({
             url: z.url().refine((url) => youtubeVideoId(url) !== null),
             videoQueueId: z.int().positive().optional(),
-            amount: MoneyAmountSchema,
-            startSeconds: z.int().nonnegative(),
-            endSeconds: z.int().positive().nullable(),
+            ...videoDetailsShape,
           })
-          .refine(
-            ({ startSeconds, endSeconds }) => endSeconds === null || endSeconds > startSeconds,
-            {
-              message: "Video end must be after video start.",
-              path: ["endSeconds"],
-            },
-          ),
+          .refine(validVideoTiming, {
+            message: "Video end must be after video start.",
+            path: ["endSeconds"],
+          }),
       )
       .mutation(async ({ ctx, input }) => {
         try {
@@ -256,17 +263,12 @@ function createVideoProcedures(queue: VideoQueue) {
         z
           .object({
             videoId: VideoIdSchema,
-            amount: MoneyAmountSchema,
-            startSeconds: z.int().nonnegative(),
-            endSeconds: z.int().positive().nullable(),
+            ...videoDetailsShape,
           })
-          .refine(
-            ({ startSeconds, endSeconds }) => endSeconds === null || endSeconds > startSeconds,
-            {
-              message: "Video end must be after video start.",
-              path: ["endSeconds"],
-            },
-          ),
+          .refine(validVideoTiming, {
+            message: "Video end must be after video start.",
+            path: ["endSeconds"],
+          }),
       )
       .mutation(async ({ ctx, input }) => {
         try {
