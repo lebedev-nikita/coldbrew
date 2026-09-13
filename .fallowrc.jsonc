@@ -1,12 +1,19 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   "minimumVersion": "3.24.0",
-  "entry": ["scripts/**/*.ts"],
-  "ignorePatterns": ["apps/alerts/**", "apps/chat/**", "apps/donations/**", "apps/video/**"],
+  "entry": ["scripts/**/*.ts", "apps/web/src/**/*.stories.tsx"],
+  "ignorePatterns": [
+    "apps/alerts/**",
+    "apps/chat/**",
+    "apps/donations/**",
+    "apps/video/**",
+    "apps/web/.ladle/**",
+  ],
   "ignoreFindings": ["apps/web/src/components/ui/**"],
   // These tools are invoked from justfile recipes rather than imported by TypeScript.
   "ignoreDependencies": [
     "@tanstack/intent",
+    "@ladle/react",
     "concurrently",
     "dbmate",
     "oxfmt",

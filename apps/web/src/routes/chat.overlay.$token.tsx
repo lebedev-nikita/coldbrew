@@ -1,31 +1,44 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ChatFeed } from "@web/components/chat-feed";
 import { useChatServiceStream } from "@web/hooks/use-chat-service-stream";
-import { useEffect } from "react";
+import { ChatOverlaySearchSchema } from "@web/lib/chat-overlay";
+import { cn } from "@web/lib/utils";
 
 export const Route = createFileRoute("/chat/overlay/$token")({
   component: ChatOverlay,
-  head: () => ({ meta: [{ title: "Chat overlay · Coldbrew" }] }),
+  validateSearch: ChatOverlaySearchSchema,
+  head: () => ({
+    meta: [{ title: "Chat overlay · Coldbrew" }],
+    styles: [
+      {
+        children:
+          "html,body{width:100%;height:100%;margin:0;overflow:hidden;background:transparent!important;background-image:none!important}",
+      },
+    ],
+  }),
 });
 
 function ChatOverlay() {
   const { token } = Route.useParams();
-  const { connectionError, messages } = useChatServiceStream("overlay", token);
-
-  useEffect(() => {
-    const previous = document.body.style.background;
-    document.body.style.background = "transparent";
-    return () => {
-      document.body.style.background = previous;
-    };
-  }, []);
+  const { background } = Route.useSearch();
+  const { messages } = useChatServiceStream("overlay", token);
 
   return (
-    <main className="flex h-dvh min-w-0 bg-transparent font-sans text-white">
+    <main
+      className={cn(
+        "fixed -inset-px flex min-w-0 overflow-hidden font-sans text-white",
+        background === "black"
+          ? "bg-black"
+          : background === "white"
+            ? "bg-white"
+            : "bg-transparent",
+      )}
+    >
       <ChatFeed
-        emptyLabel={connectionError?.detail ?? "Waiting for chat…"}
+        emptyLabel="Waiting for chat…"
         messages={messages}
         overlay
+        overlayMessageSurface={background === "black" ? "transparent" : "card"}
       />
     </main>
   );
