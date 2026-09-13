@@ -256,11 +256,7 @@ export function VideoQueueSelect({
                 value={value}
                 onChange={(event) => onChange(Number(event.target.value))}
               >
-                {queues.map((queue) => (
-                  <option key={queue.videoQueueId} value={queue.videoQueueId}>
-                    {queue.label}
-                  </option>
-                ))}
+                <VideoQueueOptions queues={queues} />
               </select>
             }
           />
@@ -280,12 +276,16 @@ export function VideoQueueSelect({
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
       >
-        {queues.map((queue) => (
-          <option key={queue.videoQueueId} value={queue.videoQueueId}>
-            {queue.label}
-          </option>
-        ))}
+        <VideoQueueOptions queues={queues} />
       </select>
     </label>
   );
+}
+
+function VideoQueueOptions({ queues }: { queues: VideoQueue[] }) {
+  return queues.map((queue) => (
+    <option key={queue.videoQueueId} value={queue.videoQueueId}>
+      {queue.label}
+    </option>
+  ));
 }

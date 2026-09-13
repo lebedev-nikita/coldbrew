@@ -17,6 +17,7 @@ import { youtubeVideoId } from "@coldbrew/packages/youtube.js";
 import type { Sql, TransactionSql } from "postgres";
 import { z } from "zod";
 
+import { getPaginationWindow } from "../pagination.js";
 import { VideoQueueError } from "./errors.js";
 import type { SharedVideoStatus, VideoStatus } from "./types.js";
 
@@ -188,9 +189,7 @@ class PostgresVideoQueue {
       total: z.int().nonnegative(),
     });
     const total = countSchema.parse(countRows[0]).total;
-    const totalPages = Math.ceil(total / input.pageSize);
-    const page = Math.min(input.page, Math.max(totalPages, 1));
-    const offset = (page - 1) * input.pageSize;
+    const { offset, page, totalPages } = getPaginationWindow(total, input.page, input.pageSize);
     const rows = await this.sql`
       SELECT
         video.video_id,
@@ -543,9 +542,11 @@ class PostgresVideoQueue {
 
     const status: SharedVideoStatus =
       input.status === "watched" && summary.publicQueueShowWatched ? "watched" : "queue";
-    const totalPages = Math.ceil(summary.total / input.pageSize);
-    const page = Math.min(input.page, Math.max(totalPages, 1));
-    const offset = (page - 1) * input.pageSize;
+    const { offset, page, totalPages } = getPaginationWindow(
+      summary.total,
+      input.page,
+      input.pageSize,
+    );
     const [rows, priorityRows] = await Promise.all([
       this.sql`
         SELECT
